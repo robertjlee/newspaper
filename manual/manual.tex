@@ -1,0 +1,1308 @@
+\documentclass[a4paper,DIV=11]{scrartcl}
+\usepackage[british]{babel}
+\usepackage{indentfirst}
+\usepackage{multicol}
+\usepackage{multirow}
+\usepackage{textcomp}
+\author{Robert Lee}
+\renewcommand{\today}{March 2024}
+\title{Newspaper Layout}
+\subtitle{Reference Manual}
+
+% Definition of term
+%\newcommand{\deft}[2]{\nopagebreak\noindent\hspace{-2em}\textbf{#1}\par\noindent{}#2\pagebreak[1]\par}
+\newcommand{\deft}[2]{\nopagebreak\noindent\hspace{0.5in}\textbf{#1}\par\noindent{}#2\pagebreak[1]\par}
+
+% Properties key definition
+\newcommand{\property}[5]{
+  \subsection{#1: \texttt{#2}}
+  \begin{itemize}
+  \item Type: #3
+  \item Default: #4
+  \end{itemize}
+  #5
+}
+
+
+\newcommand{\setting}{\property{Setting}}
+\newcommand{\header}{\property{Header}}
+
+
+% For CMR: DocBucket's workaround according to StackExchange:
+\usepackage{textcomp}
+\newcommand{\texttilde}{\raisebox{0.5ex}{\texttildelow}}
+
+
+
+\begin{document}
+
+\maketitle
+
+\setlength{\parskip}{0.5ex plus 0.5ex}
+
+
+\section{Abstract}
+
+This manual discusses the reference implementation for a newspaper
+typesetting algorithm.
+
+The editor produces a number of inserts, including articles, titles,
+pictures and so on, and they are typeset into an attractive newspaper
+layout. This frees the editor from most typesetting tasks, while still
+allowing them nearly full control over the process.
+
+
+\section{Installation Requirements}
+
+\deft{OpenJDK-11.0.2}{To use the programme, a Java Runtime
+  Environment~(JRE) is required. A full Java Development Kit~(JDK) can
+  be used to compile the source code. The programme is developed
+  against Java~11; newer versions should also work. At time of
+  writing, there are no external Java dependencies required at
+  runtime.}
+
+\deft{\LaTeXe}{Either PdfLaTex or LuaLaTex is recommended, and
+  LuaLaTeX is strongly recommended if you want to use markdown in your
+  input articles. This is used both to measure the size of articles
+  prior to layout, and to perform the final typesetting of the document.
+  The following packages are required:
+  \begin{itemize}
+  \item[multicol] Used by headspan articles
+  \item[fontsize] Used to set up the default font size commands and associated spacing.
+  \item[inputenc] Used to read UTF-8 characters in inputs
+  \item[newtx] Supplies the default \textit{Times Roman} font
+  \item[geometry] Used when measuring article sizes, and to set the
+    final paper size.
+  \item[babel] Used per default to set hyphenation points
+  \item[indentfirst] Used per default to indent the first paragraph of
+    each article.
+  \item[markdown] Required only if using markdown input modes.
+  \end{itemize}
+  TODO:
+  package version requirements.}
+
+% \usepackage or \RequirePackage [opts]{name}[min y/m/d]
+
+\subsubsection*{Optional Requirements}
+
+\deft{JUnit-5.8.1 (for testing)}{The Java programme comes with a
+  reasonably complete set of unit tests written under the JUnit
+  framework. The framework is not required to compile or run the
+  programme, but is fairly essential to further develop the
+  application.}
+
+\subsubsection*{The Programme}
+
+The programme itself can be downloaded from:-
+
+\texttt{https://github.com/robertjlee/newspaper}
+
+\section{Article Requirements}
+
+The aim of this package is to collect discrete inputs and to present them
+in a professional-standard newspaper layout. Each input must have a
+single file that the programme understands, although it may input
+other files arbitrarily.
+
+All inputs must be provided in \texttt{UTF-8} text encoding, one per
+file, with special \textit{headers} provided at the start of the file,
+as described later in this manual.\pagebreak[1]
+
+The programme currently understands the following formats:-
+
+\deft{\LaTeX}{The input will be typeset one or more times to
+measure its length, and then once in the final output. While any
+\LaTeX\ package (other than class files) can be used, some
+require running the document multiple times to obtain the final
+output. These are unlikely to work well, unless the overall
+\textit{length} of the article is unchanged.}
+
+\deft{Plain Text}{Documents in plain text are supported. You should
+use a blank line to separate paragraphs; any
+special spacing in the input will be lost. Most other characters
+behave as you'd expect, although you can add extra dashes~(-) in the input
+to produce longer dashes in the output (\texttt{1-{}-3 dashes -{}-{}-
+  like this, or-else}; 1--3 dashes --- like this, or-else). You can
+also use backticks~(\textasciigrave) and apostrophies~(\textasciiacute) to produce quotation marks
+(\texttt{\textasciigrave\textasciigrave like this\textasciiacute\textasciiacute} for ``like this''). }
+
+\deft{Markdown}{There is some support for markdown, which requires the
+\texttt{lualatex} executable to be used, with the
+\texttt{--enable-shell} option. \textbf{Caution:} You should examine
+all input files carefully when using this configuration, other than
+plain text: it enables arbitrary code to be run on your computer, both
+when running the programme and when compiling the newspaper.}
+
+\section{Glossery of Terms}
+
+Some of these terms are common in newsprint typesetting, others are
+specific to this algorithm. An understanding of how these terms will
+make the manual easier to follow.
+
+\vfil
+
+
+\deft{Article}{A collection of prose forming a cohesive story, which
+  can be typeset in a number of ways.}
+
+\deft{Article Fragment}{For a paste-up article, this is an element
+  consisting of a cut-out section of the article placed on the page.}
+
+\deft{Alley}{Whitespace - or anything else - placed between columns or
+  elements on the page.}
+
+\deft{Element}{The term is used here for an article fragment, title,
+  or other insert set onto the page.}
+
+\deft{Footers}{Any information provided at the end of an
+  article, such as a \textit{``continued on page\dots''} indicatior,
+  or footnotes.}
+
+\deft{Headers}{Any information provided at the start of an article or fragment,
+  such as headlines, sub-headings, authors and so on. If an article
+  breaks across pages, the \textit{``\dots continued from page''}
+    indicator is also considered to be a header.}
+
+\deft{Headline}{A title of an article, set in a larger, bold font. The
+  reader can scan the page for headlines to determine which articles
+  they want to read.}
+
+\deft{Head-span Article}{An article, set onto the page in a rectangle,
+  with a headline spanning the entire article.}
+
+\deft{Input}{A general term for an article, input or other file read
+  by this programme to produce the output.}
+
+\deft{Input directory}{A filesystem directory (or folder) containing
+  one or more inputs. There may be one or more input directories.}
+
+\deft{Insert}{An element added to the page with fixed
+  dimensions. Typically, this is a graphic image or title, but the
+  algorithm considers anything with a fixed-size to be an insert,
+  including a head-span article where the number of columns is known.}
+
+\deft{Newsprint}{The ink used to print the newspaper. The term is used
+  here for anything typeset in the style of a newspaper, especially a
+  portion of a newspaper page.}
+
+\deft{Output directory}{A filesystem directory (or folder) into which
+  the typeset version of the newspaper is placed.}
+
+\deft{Overflow}{When typesetting a page, any elements (especially
+  article fragments) that do not fit on a page are known as the
+  overflow. Overflow is always typeset at a later place than it would
+  normally be expected to.}
+
+\deft{Paste-up}{A method of creating newsprint by setting an entire
+  article in a single, long column, then splitting that column across
+  the page. Distinguished by having the headline inside the column.
+  Originally, this was done by literally cutting and pasting
+  to create a master proof.}
+
+%% \deft{Truck}{The detachable portion of a printing press containing the
+%%   typeset page. Notably, the ``truck'' is the size of a page, so a
+%%   ``double-truck page'' would be a centerfold page twice the size of a
+%%   single page.}
+
+\section{Filesystem Layout}
+
+This is an implementation of an algorithm to take \textit{inputs} from
+files supplied by the user, and to produce an output layout. The
+implementation outputs a \LaTeXe\ source file that references back to
+the supplied inputs, and can then be typeset directly to produce a
+rendered document. By default, the reference programme will also perform
+this typesetting.
+
+The user is responsible for supplying the files required as
+inputs. The user must create one or more \textit{input directories} on
+the filesystem, which will contain the content in roughly the order of
+typesetting. The user must also create an \textit{output directory},
+which should have the same parent directory as the first input
+direcotry.
+
+This arrangement allows a lot of flexibility. For example: different
+sub-editors could supply different directories of inputs for
+typesetting, which can then be chained together; or you could supply
+one directory for each page of the newspaper, satisfied that any overflow
+from one page will still move to the next page as required.
+
+The output from the programme must also go somewhere. It's not
+convenient to write the output to the same directory as the input,
+because of the way that \LaTeX\ uses multiple temporary files during
+its layout --- at minimum, an \verb!.aux! and a \verb!.log! file ---
+which may affect subsequent runs, and can clutter the input
+directory. So, to make sure we can always get back to a ``clean
+slate'' to recreate the newspaper again, we always place the output in
+a directory of its own. The user can choose the name of this
+directory, but if they don't, a new directory named simply \verb!out!,
+will be created.
+
+
+\section{Settings File}
+
+The settings file is named \verb!settings.properties! and is formatted
+as a Java language Properties file, described in full in the Java
+SDK\footnote{\texttt{https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/Properties.html\#
+    load(java.io.Reader)}}.
+
+Four our purposes, each file contains a number of lines. Blank lines,
+and lines starting with a hash/pound sign~(\verb!#!) are
+ignored. Settings are given one per line, with the setting name
+followed by an equals sign~(=) or colon~(:), followed by the setting
+value. The backslash~(\textbackslash) escapes the following character,
+so a single backslash in a property value will be encoded as two
+backslashes in the property file.
+
+When the application is run, each source directory is checked for a
+settings file. It is strongly recommended
+that the filename be in all lowercase, for portability. Settings files
+must be plaed directly in the source directory; subdirectories are not
+checked. If the same setting key is found in more than one settings
+file, the value from the later file is used, based on the order in
+which the source directories are given to the programme.
+
+Each setting has a default value, which may sometimes be calculated based on
+other settings (in which case, changing the other setting will change
+the default value).
+
+Where a setting is a length, it should be specified as a
+floating-point number, followed directly by a unit indicator. 0
+lengths do not require a unit. Units are not case-sensitive.
+Supported units are:
+\begin{center}
+  \begin{tabular}{r|l}
+    \verb!in! & inches (1\textrm{in} = $\frac{1}{36}$ International Yard) \\
+    \verb!inch! & inches \\
+    \verb!inches! & inches \\
+    \verb!pt! & \TeX\ points ($1\textrm{pt} = 0.35145980mm$) \\
+    \verb!mm! & millimeter \\
+    \verb!cm! & centimeter \\
+    \verb!dm! & decimeter \\
+    \verb!m! & meter
+  \end{tabular}
+\end{center}
+
+Note that the typesetting units \verb!em! and \verb!ex! are not
+currently supported, and calculations cannot be supplied.
+
+\subsubsection*{A note on paper sizes}
+
+In essence, a newspaper is a method of providing a large amount of
+accessible text onto a single page. For this reason, newspapers have often
+been printed onto larger size paper sheets.
+
+Choosing a paper stock depends on your use-case, the size of paper you can
+obtain, and what your printing equipment can support. You may
+configure any paper size within the limits of \LaTeX\ (up to
+2267.05408in for both \texttt{pageWidth} and \texttt{pageHeight}), but
+if you intend to print it, you will need to ensure you have the
+available paper and suitable printing equipment. There must be
+sufficient space for at least one column and the page must be larger
+than your largest fixed-size insert  --- including margins.
+
+In most of the world, home printing uses paper sizes of the finished
+``A'' series defined by ISO~216 (and incorporated by ANSI into ASME
+Y14.1M). The ``B'' series of the same standard supplies larger paper
+commonly used in commercial printing; it is available in larger sizes
+and is mainly used for printing ``A''-series paper with bleed margins.
+
+In North America, the ANSI standards are formalised in ASME~Y14.1; the
+ARCH system is not a standard, but provides useful paper sizes
+preferred by architects.
+
+The following table provides various dimensions of paper from around
+the world:-\nopagebreak\vspace*{1.5em}\nopagebreak
+
+\centerline{
+  \begin{tabular}{r|c|c|c}
+    \multicolumn{4}{c}{\textbf{Common Paper Sizes}} \\
+   & \textbf{Code} & \textbf{\texttt{pageWidth}} &
+  \textbf{\texttt{pageHeight}} \\
+  \hline
+  ISO~216 & A3 & 297mm & 420mm \\
+  ISO~216 & A4 & 297mm & 210mm \\
+  ISO~216 & B2 & 500mm & 707mm \\
+  ISO~216 & B3 & 353mm & 500mm \\
+  ANSI & Letter & 11in & 8.5in \\
+  ANSI & Legal & 14in & 8.5in \\
+  ARCH & A & 9in & 12in \\
+  ARCH & B & 12in & 18in \\
+  ARCH & C & 18in & 24in \\
+  ARCH & D & 24in & 36in \\
+  ARCH & E & 36in & 48in \\
+  ARCH & E1 & 30in & 42in \\
+  ARCH & E3 & 27in & 39in
+  \end{tabular}
+  \hfil
+  \begin{tabular}{r|c|c}
+    \multicolumn{3}{c}{\textbf{Generic Newspaper Sizes}} \\
+    \textbf{Code} & \textbf{\texttt{pageWidth}} &
+  \textbf{\texttt{pageHeight}} \\
+  \hline
+  \textbf{Tabloid}\hspace*{0.25in} & & \\
+  CanadaT & 260mm & 368mm \\
+  NorwayT & 280mm & 400mm \\
+  BritainT & 280mm & 430mm \\
+  \textbf{Berliner}\hspace*{0.25in} & & \\
+  Midi & 315mm & 470mm \\
+  \textbf{Broadsheet}\hspace*{0.25in} & & \\
+  USA & 381mm & 578mm \\
+  Norwegian & 400mm & 570mm \\
+  South Africa & 410mm & 578mm \\
+  (A2) Australia/ & \multirow{2}{*}{420mm} & \multirow{2}{*}{594mm} \\
+  New Zealand\hspace{1em} & & \\
+  Britain &  375mm & 597mm \\
+  \end{tabular}
+}
+
+\subsubsection*{A note on Fonts and Font Selection}
+
+Choosing fonts is always difficult, particularly where a high level of
+readability is required. Newspapers should be quick to skim and easy
+to read in detail, in spite of often very small text.
+
+Generally, most documents use only a single typeface, in several
+variants (like bold text for titles). \LaTeX\ has notoriously fiddly
+font handling, because it's designed around this use-case: it's
+possible to change fonts arbitrarily throughout a document, but it's
+far more common to simply switch to a variant --- like using
+\textit{italic} for emphasis --- temporarily.
+
+For a newspaper, there are generally three distinct typefaces in use:
+the main title is typically a bold, gothic style; headlines use a
+large serif font that's easily picked out on the page; and the article
+text uses a small, narrow-spaced serif font that guides the eye along
+the page. (There have been few published studies on the effectiveness
+of serif fonts on printed newspapers; however, when viewed on a
+backlit electronic display, sans-serif fonts are more readable:
+consider your audience).
+
+A font is a physical container of engraved metal letters used in a
+printing press; it contains the complete alphabet, including ligatures
+and punctuation, for a consistent size, scale and form of the text. Electronic
+printing has allowed many thousands of fonts to be represented, and
+the term ``font'' has come to mean the specific shapes of the symbols
+once held in a single physical font. Notably, \textit{10pt~Times} and
+\textit{11pt~Times} are different \textit{fonts}, even though they are
+the same \textit{typeface}~(Times).
+
+In \LaTeX, each font has a number of properties:-\par
+\deft{Encoding}{This controls how \TeX's internal codes map to each glyph in the font.}
+\deft{Family}{The typeface, or group of related typefaces}
+\deft{Series}{Weight and width of the font}
+\deft{Shape}{Upright, italic, slanted (oblique), small caps, outline, \dots}
+\deft{Size}{The point size of the font. As a rule of thumb, the letter
+  ``M'' will be this tall when measured in typesetting points --- but
+  the exact size is set by the font author.}
+\deft{Spacing}{\LaTeX\ actually considers this part of the font size;
+  it tells \TeX\ how far apart to set the baselines between each line
+  of text within a paragraph. By default, this program leaves \textit{2pt}
+  between each line, but this can be varied when selecting the font
+  depending on visual cues like the length and frequency of
+  descenders~(parts of text extending below the baseline, like in the
+  letters ``p'' and ``q''). The aim should be to balance the
+  whitespace around the text and a clear distinction between lines,
+  against the constant pressure to increase the volume of text on the
+  page.}
+
+To use a font with the \textit{\LaTeXe\ Font Selection
+  System}~(\texttt{FSS}), it must first be installed on your system;
+this typically happens when \LaTeX\ is installed, but there is a
+(somewhat non-trivial) process to install your own. This process produces
+a file with a ``.fd'' extension for each combination of encoding and
+family, and only by inspection of this file can you determine the
+available values of series and shape.
+
+%\LaTeX\ also has support for the more common \textit{TrueType
+%  Font}~(TTF) system.
+If using \textit{XeLaTeX}, or \textit{LuaLaTeX}
+you can simply use any font installed on your operating system, by
+setting the forllowing options in a settings.properties file. See \textit{The Fontspec
+  package}\footnote{\texttt{https://ctan.org/pkg/fontspec}} for
+further details:-
+
+\nopagebreak
+\begin{verbatim}
+preambleFont0=\usepackage{fontspec}
+preambleFont1=\setmainfont{Full name of font}
+\end{verbatim}
+
+If not using XeLaTeX or LuaLaTeX, the default encoding~(\verb!TU!) may
+not be available. For most english-language text, you are recommended
+to choose the \verb!T1! encoding, which is the orginal ``standard''
+\TeX\ encoding, and widely supported. The \LaTeX\ project has a full
+description of the various font
+encodings\footnote{\texttt{https://www.latex-project.org/help/documentation/encguide.pdf}}:
+the trick is to find encodings that are supported both by the font,
+and also by the \LaTeX\ platform you are using: otherwise \TeX\ will
+fail to find the characters and replace them with, typically,
+\textit{Computer Modern Roman}. To switch the default encoding to
+\verb!T1!, add this to your \verb!settings.properties! file:-
+
+\nopagebreak
+\begin{verbatim}
+defaultFontEncoding=T1
+\end{verbatim}
+
+Having changed the main font family to Times, a new problem emerges:
+there is no suitably narrow monospaced font in the Times family. Yet
+this document supports Markdown, and monospaced fonts are typically
+seen in many Markdown documents found online, especially when
+discussing computers and data files. The default monospaced font
+(\textit{Computer Modern Teletype}) has too wide a spacing for use in
+narrow columns, while also being visually out of kilter with
+\textit{Times Roman}. It is beyond the scope of this project to
+develop a new \textit{Times Teletype} font, so instead the new default
+is \textit{Latin Modern Mono Light Condensed} (\textit{Latin Modern
+  Mono} is the family; \textit{Light Condensed} is the weight). This
+is chosen because in it a universally available high-quality font,
+ideally suited for narrow columns, and because no font that is more
+visually suited to \textit{Times Roman} currently exists. You can
+switch the default teletype font using the following (TODO).
+
+
+Having carefully selected your fonts, you should create a test paper,
+perhaps using the demo input files, and then check the \LaTeX\ output
+log file carefully for warnings: it's possible for fonts to be missing
+expected glyphs, or even entire shapes or series.
+
+One further warning: The \textit{Mode=Plain} input expects the font
+you are using to provide characters for backslash~(\textbackslash),
+and braces~(\{\}) at the standard unicode character points. Not all
+fonts installed in \TeX\ do this, and so some choices may result in
+unexpected characters in the output; if you change the default
+document font to one which does not support these characters ---
+inclruding \texttt{cmr}, the default font for \TeX --- then these
+characters may be omitted in the output, or different characters
+displayed instead, when they appear in a \textit{Mode=Plain} input.
+
+
+Further reading on fonts is available at the \LaTeX\ Font
+Guide\footnote{\texttt{https://www.latex-project.org/help/documentation/fntguide.pdf}},
+and documentation on many pre-installed fonts is found at the \LaTeX\ Font
+Catalogue\footnote{\texttt{https://tug.org/FontCatalogue/allfonts.html}}.
+
+
+
+
+\begin{multicols}{2}
+
+\setting{version}{symantic version number\footnote{\texttt{https://semver.org/}}}{1.0.0}{
+  This setting will be used by future releases of this
+  programme. Where there are changes that break the visual output of
+  the newspaper, setting this version number in your
+  \texttt{settings.properties} to the release number of the programme,
+  will make a best-effert to produce the
+  output of the previous version.\par
+  This does not apply where a bugfix corrects clearly-erroneous output
+  in a previous release; you are recommended to keep your PDF for
+  posterity rathar than regenerating the \texttt{.tex} file each time
+  an old PDF is required.
+}
+\setting{allowTexFileOverwrite}{``true'' or ``false'', any case}{false}{
+  Normally, the programme will abort if the output file --- typically
+  \texttt{newspaper.tex} --- already exists, to ensure that you can't
+  accidentally overwrite the last edition's newspaper. Set this to
+  ``true'' if you are going to run the programme repeatedly.\par Always take
+  care to back up your final edition newspapers regardless of this setting.
+}
+\setting{pageSize}{code in above table}{650mm $\times$ 750mm}{
+  The \texttt{pageSize} simply sets both \texttt{pageWidth} and
+  \texttt{pageHeight} based on the above table. For Australia/New
+  Zealand, use code~``A2''.\par This setting changes the default width
+  and height of the page, and is overridden by \texttt{pageWidth}
+  and/or \texttt{pageHeight}. Note that this is the size of a
+  \textit{page}; the \textit{paper} size should normally be twice
+  this, to allow four pages per leaf. \par Note that \textit{A4} pages
+  are printed in landscape by default, as headers can appear cramped
+  on paper much narrower than around 300mm.
+}
+\setting{pageWidth}{length}{650mm, or from \texttt{pageSize}}{The width of a page, including all
+  margins.\par The default page size is a for typical broadsheet
+  newspaper; see \texttt{pageSize}.}
+\setting{pageHeight}{length}{750mm, or from \texttt{pageSize}}{The height of a page, including all margins.}
+\setting{columnWidth}{length}{1.5in}{The width of a newsprint column,
+  not including any alleys set to its sides.}
+\setting{columnHeightRatioOfPage}{number with decimal places,
+  dimensionless units}{0.9}{The ratio of the height of the page to the
+  height of a column. Ignored if the \texttt{columnHeight} is
+  set. Must be greater than $0$ and no greater than $1$. Sets the top
+  and bottom margins of the page.}  \setting{columnHeight}{length}{The
+  height of a column. If not specified, it is calculated based on
+  \texttt{pageHeight} and \texttt{columnHeightRatioOfPage}}
+\setting{alleyWidth}{length}{0.125in}{Space between columns, including
+  any dividing lines.}  \setting{alleyHeight}{0.125in}{length}{When
+  elements are set above each other, this is the amount of space to
+  leave between them, including any dividing lines.}
+\setting{alleyThickWidth}{0.0125in}{length}{The width of a vertical
+  line to place to the sides of newspaper columns. Set to 0 to disable
+  vertical dividing lines.}
+\setting{alleyThickHeight}{length}{0.0125in}{The height of a
+  horizontal line to place between elements that are placed above each
+  other. Set to 0 to disable horizontal dividing lines.}
+\setting{minSideMargins}{length}{0.125in}{The minimum amount of
+  whitespace to set at the sides of each page. Even if this is set to
+  $0$, there will almost always some space at the sides, because the
+  alrogithm will only fit entire columns onto the page, with
+  fixed-size alleys between them, and may put fewer columns onto a
+  page than will fit in order to reduce the chance of orphan columns
+  on the last page.\par This is the guaranteed page border, totalled
+  over left and right margins.}
+\setting{defaultFontSize}{\TeX\ points, typically 10, 11 or 12}{10}{This 
+  setting controls the point size of the default document, in
+  points.\par
+  The \TeX\ distribution provides \textit{class options} (primarily
+  spacing defaults) for 10, 11, and 12 points. Where these values are
+  not used, the nearest file will be loaded, and some sizes adjusted
+  by scaling. For these other sizes, you may need to provide a
+  \texttt{defaultFontSizeClo} file to obtain visually perfect output.
+}
+\setting{defaultFontSizeClo}{String}{\textit{no value}}{This advanced setting
+  allows you to change the \textit{class options} for the current
+  document, and it will be loaded by the \texttt{fontsize}
+  package. You should supply a file named
+  \textit{nameSIZE}\texttt{.clo} --- where \textit{SIZE} is the value
+  of the \texttt{defaultFontSize} property, and \textit{name} is the
+  value of this property. The \textit{.clo} file will then be used to
+  set up the various size options for the default font.\par
+  For more information, see the FontSize documentation\footnote{\texttt{https://mirror.ox.ac.uk/sites/ctan.org/macros/latex/contrib/fontsize/fontsize.pdf}}
+}
+\setting{defaultFontEncoding}{\LaTeX\ font encoding name}{TU}{This is
+  the font encoding name used when no specific encoding is
+  listed. Common choices are \texttt{T1} --- for good compatibility,
+  especially in English, when using pdflatex --- \texttt{TU} for
+  Unicode fonts supported by Lua\LaTeX and Xe\LaTeX ---
+  and \texttt{TS1}, the ``Cork'' encoding, for most fonts originating from the
+  \texttt{Metafont} project. \texttt{CJK} covers Chinese, Japanese, and Korean
+  characters, while \texttt{X2} covers Cryillic, and \texttt{LGR}
+  covers Greek.
+}
+\setting{defaultFontFamily}{\LaTeXe\ font family code}{ptm}{This is the code
+  for an installed typeface on your \LaTeX\ installation. The default is
+  \texttt{ptm}, a Times Roman clone. Change this with care, as
+  Times is ubiquitous for newspapers.\par Common values are
+  \texttt{cmr} for \textit{Computer Modern Roman}, \texttt{cmrs} for
+  \textit{Computer Modern Roman Sans}, or \texttt{phv} for a Helvetica
+  clone. This can also be a \LaTeX\ macro defined in the preamble that
+  expands to the correct name.
+  \par Ignored if \texttt{defaultFontFamilyFromHeaders} is changed to
+  \texttt{true}.
+}
+\setting{defaultFontFamilyFromHeaders}{\textit{true} or \textit{false}, case-insensitive}{false}{
+  When false, this has no effect.\par
+  When true, this disables the attempt to change the value of the default
+  typeface after loading the preamble, disabling the
+  \texttt{defaultFontFamily}, \texttt{defaultFontSeries},
+  \texttt{defaultTeletypeFamily} and \texttt{defaultTeletypeSeries}
+  settings. This allows you to import a
+  package in the preamble section that changes the default
+  typefaces. Otherwise, the typeface will be set to the \TeX\ default,
+  \textit{Computer Modern Roman}, which is not well-suited to narrow
+  columns.
+}
+\setting{defaultFontSeries}{\LaTeX\ font series code}{m}{
+  This is the series code for the default font. It produces a line in
+  the output document \texttt{\textbackslash
+    DeclareFontSeriesDefault\[rm\]\{md\}\{m\}} --- where the final
+  value is the font series to be used by the default, medium-density
+  roman font used in the document.
+}
+\setting{defaultTeletypeFamily}{\LaTeX\ font family name}{lmtt}{
+  This is the default family code for the default
+  \textit{teletype}~(monospaced) font. While teletype fonts are rarely
+  used in newspapers except for special effects, no good matching
+  font currently exists, so this uses the \textit{Latin Modern
+    Teletype} font, which supports many languages and the
+  ultra-condensed spacing.
+}
+\setting{defaultTeletypeSeries}{\LaTeX\ font series code}{lc}{
+  This setting selects the series (variant) of the teletype
+  (monospaced) font. the \textit{Light condensed} variant ---
+  supported by \textit{Latin Modern Teletype} --- is used by default,
+  as this font (designed for margin notes) works well in narrow
+  columns. It is, however, a lightweight font and stands out against
+  the Times Roman text; this may or may not be desirable depending on
+  usage.
+}
+\setting{inputFilter}{Comma-separated strings}{\texttt{.tex, .md, .markdown, .txt, .text}}{
+  This setting simply defines which files in the input will be checked
+  for a \textit{Type} header. This has no bearing on the type of
+  content in that file; for that, use the \textit{Mode} header.\par
+  Any file that matches one of these values will be considered for
+  inclusion; so by default, you can write inputs as: \texttt{.tex};
+  \texttt{.md} or \texttt{.markdown}; and \texttt{.txt} or {.text}. It
+  is suggested these be used with \TeX, markdown, or plain text, respectively.\par
+  It is not possible to include a comma in the filename extension.\par
+  There is no wildcard character, whitespace before or after a comma
+  is ignored, and blank extensions are ignored.
+}
+\setting{head\dots}{Font definition}{\textit{18pt bold}}{
+  These settings set the font used to typeset the article headlines. They can
+  be overridden for each article by changing the corresponding
+  \texttt{Font\dots} headers. Note that if \texttt{headCommand} is
+  used, it can only be overridden by the \texttt{FontCommand} header;
+  otherwise, each header overrides the corresponding setting.
+  \par
+  The font may be configured using the following options:-\par
+  \deft{headEncoding}{The \LaTeX\ encoding code for the text (up to 3 upper-case
+    letters, followed by optional digits)}
+  \deft{headFamily}{The \LaTeX\ internal name of the font family (typeface). This
+    can be a command, such as \texttt{\textbackslash rmdefault} for
+    the document default font family, or an internal name like
+    \texttt{cmr} for Computer Modern Roman.}
+  \deft{headSeries}{The font series code for the font (usually ``m''
+    for medium or ``b'' for bold.}
+  \deft{headShape}{The shape code for the font (usually ``n'' for
+    upright.}
+  \deft{headSize}{The size of the font to use, in \LaTeX\ points.}
+  \deft{headSpacing}{The spacing of lines in this font; by default,
+    $\textit{headSize} + 2\textrm{pt}$. This may be a \LaTeX\ rubber
+    length, but only makes a difference if multiple lines of text are
+    included.}
+  \deft{headCommand}{Some packages provide convenient user commands to
+    switch fonts. This header, if specified, will override the other
+    \textit{head\dots} headers, and use this command instead.
+  }
+}
+\setting{markdown}{\LaTeX\ header code}{\texttt{\textbackslash
+    usepackage\[smartEllipses,fancyLists\]\{markdown\}}}{
+    The programme supports accepting input in markdown format using the
+    header \texttt{\%\#Mode=markdown}. When such a header is found,
+    this setting is automatically added as a line in the document
+    preamble.\par
+    To successfully compile a markdown article, you will need to set either
+    \texttt{latex=lualatex} or \texttt{latex=xelatex}.
+    Otherwise, you may need to add
+    \texttt{--shell-escape} to the \texttt{latexCmdLine} setting;
+    without a version of \TeX\ built on a \textit{Lua} engine, the
+    markdown package needs to call a
+    supporting programme from \LaTeX. \textbf{Caution: This could be a
+      security risk if mixing \texttt{markdown} and \texttt{LaTeX}
+      article types in the same document!} it's better to use
+    \texttt{lualatex} if in doubt.\par
+    The complete list of options are listed in the Markdown package
+    documentation\footnote{\texttt{https://mirror.apps.cam.ac.uk/pub/tex-archive/macros/generic/markdown/markdown.html\#options}}. A
+    quick reference of the more useful options follows:-\par
+    \deft{blankBeforeBlockquote}{Chevrons~($>$) not following a
+      blank line will not start a blockquote}
+    \deft{blankBeforeHeading}{A heading must follow a blank line.}
+    \deft{blankBeforeList}{A list must follow a blank line.}
+    \deft{breakableBlockquotes=false}{Ignore blank lines in the middle
+      of a blockquote}
+    \deft{definitionLists}{After declaring a term, start a new
+      line with a colon~(:) to give its definition.}
+    \deft{fancyLists}{Change the presentation of lists.}
+    \deft{fencedCode}{Enable fenced-code blocks. An open fence is a line
+      containing three backticks, and an optional format name, and
+      preceeds a block of code. A closing fence line contains three
+      backticks, and follows the block of code. The code will be displayed
+      as is, perhaps highlighted depending on the format name.
+    }
+    \deft{hashEnumerators}{Use a hash sign (in US english, a pound
+      sign) followed by a fullstop~(\texttt{\#.}) to introduce each item
+      of a numbered list.}
+    \deft{html}{Allow inline static HTML within the markdown article.}
+    \deft{hybrid}{Allow inline \LaTeX\ within the markdown
+      article. This can be useful for special effects, but changes the
+      meaning of backslash~(\textbackslash) and braces~(\{\}) and
+      introduces the possibility of breaking the newspaper compilation.}
+    \deft{linkAttributes}{A syntax for including inline images,
+      like this: \texttt{![image](foo.jpg)\{\#id .class width=30
+        height=20px\}}}
+    \deft{lineblocks}{Successive lines starting with a bar~(|) will be
+      considered as a block, and leading spaces preserved. Useful for
+      addresses.}
+    \deft{mark}{Use two equals signs either side of text to
+      highlight it by changing the background colour.}
+    \deft{notes}{Allows a syntax similar to footnotes, but
+      presented inline in the text.}
+    \deft{shiftHeadings=\textit{number}}{The given \textit{number} is
+      added to the heading level; positive numbers make headings
+      smaller.}
+    \deft{smartEllipses}{With this option, any occurance of
+      \texttt{...} in the input will be properly formatted as an
+      ellipsis character~(\dots); without it, you will see three dots
+      with poor spacing~(...).}
+    \deft{strikeThrough}{With this option, text surrounded with
+      double tildes~(\textasciitilde) will be overtyped with a horizontal line.}
+    \deft{subscripts}{Text surrounded with single tildes~(\textasciitilde)
+      will be shown subscript; e.g. \texttt{H\textasciitilde2\textasciitilde O}
+      becomes~H\textsubscript{2}O.}
+    \deft{subscripts}{Text surrounded with single carets~(\textasciicircum)
+      will be shown subscript; e.g. \texttt{e=mc\textasciicircum2\textasciicircum}
+      becomes~e=mc\textsuperscript{2} --- see also \texttt{texMathDollars}.}
+    \deft{texComments}{A percent sign~(\%), and any text on a line
+      after it, will be ignored. Note that lines starting with a~\%
+      will always be ignored due to how the Markdown input is included.}
+    \deft{texMathDollars}{When text is surrounded by dollar
+      signs, it will be typeset in
+      \LaTeX\ math-mode. e.g. \texttt{\$e=mc\textasciicircum2\$} is typeset as
+      $e=mc^2$. Double dollars use block math mode.}
+    \deft{tightLists=false}{By default, lists lists written as one
+      line per item are rendered with less spacing than lists containing paragraphs of
+      text. This option disables this tighter-grouping and adds more
+      whitespace.}
+    \deft{underscores=false}{By default, underscores declare emphasis
+      like asterisks; this option disables this. Recommended with the
+      \texttt{hybrid} option.}
+}
+\setting{continuedOnPageText}{\LaTeX}{\textbackslash hfill\textbackslash textit\{\textbackslash small Continued
+    on page \%s\textbackslash dots\}}{
+  This \LaTeX\ text is displayed after each article fragment where the
+  article does not fit completely on the page. If the string contains
+  ``\%s'', then it will be replaced with the page number of the
+  continuation page.
+}
+\setting{continuedFromPageText}{\LaTeX}{\textbackslash textit\{\textbackslash small Continued
+  from page \%s\textbackslash dots\}\textbackslash hfill}{
+  This \LaTeX\ text is displayed before each article fragment where the
+  previous article fragment was displayed on a previous page. If the
+  string contains ``\%s'', then it will be replaced with the page
+  number of the continuation page.
+}
+\setting{jobname}{filename without suffix}{newspaper}{Primarily, this
+  sets the name of the output files written by the alrogithm. Usually,
+  this also sets the name of the \texttt{PDF} and \texttt{.log} files
+  produced by \LaTeX, although that can be overwritten by setting the
+  \TeX\ variable \texttt{\textbackslash jobname} or passing the
+  \texttt{-jobname} argument through the \texttt{latexCmdLine}
+  setting.}
+\setting{logFile}{filename or path relative to output directory}{layout.log}{
+  When creating the output newspaper, a log file is usually created to
+  supply detailed information about processing. Depending on how you
+  work, this may be more or less convenient that the information
+  supplied by the console. This file can be anazylsed to determine why
+  something was not processed as expected.\par By default, this file
+  is placed in the output directory and named
+  \texttt{layout.log}. This setting simply changes the filename.\par
+  See \texttt{logFileLevel} for how to configure the contents of this
+  file.\par If this file is not created, the console output should be consulted.
+}
+\setting{logFileLevel}{One of: \texttt{silent}, \texttt{quiet}, \texttt{elements},
+  \texttt{algorithm} or \texttt{dump\_all}}{algorithm}{
+  This setting determines what is logged to the log file. If
+  \texttt{silent}, no log file is created. \texttt{Quiet} will ensure
+  the file only contains error messages, \textit{i.e.} the reason the
+  output \texttt{.tex} file could not be produced. \texttt{Elements}
+  will provide statistics for each inputs file (this could perhaps be used to
+  determine how many column-inches of content have been supplied by
+  each author). \texttt{Algorithm} will trace the algorithm as it
+  considers how to lay out each page, which can be useful for editors
+  looking to better understand and tweak the
+  way pages are laid out. \texttt{Dump\_all} can produce a large amount of content,
+  and includes the text of all intermediate \texttt{.tex} files used
+  to measure the length of articles.
+  \par
+  Each level implies the output of previous levels as well.
+  \par
+  NB: The \texttt{Algorithm} level includes an estimate of how much
+  more content is required to completely fill the number of pages
+  needed to set the provided input. This is an over-estimate, as
+  it does not allow for the column-inches used by ``continued on'' labels,
+  ``continued from'' labels, or alleys between articles.
+}
+\setting{stdOutLevel}{One of: \texttt{silent}, \texttt{quiet}, \texttt{elements},
+  \texttt{algorithm} or \texttt{dump\_all}}{elements}{
+  This setting is identical to \texttt{logFileLevel}, but controls the
+  output produced on the console --- technically, on the
+  \textit{standard output stream}.\par Please note that errors parsing
+  the settings file will always appear on the console via the
+  \textit{standard error} stream; see \texttt{stdErrLevel}.
+}
+\setting{stdErrLevel}{One of: \texttt{silent}, \texttt{quiet}, \texttt{elements},
+  \texttt{algorithm} or \texttt{dump\_all}}{silent}{
+  This advanced setting is of interest to users wishing to automate
+  the process. The setting is identical to \texttt{stdOutLevel},
+  except that it controls the \textit{standard error stream}, which
+  remains displayed on the console even if the standard output is
+  redirected.\par
+  \texttt{Silent} here means to include only the most critical of
+  errors, such as parsing the settings files: such messages will
+  always be sent to \textit{standard error}. \par
+  Any messages sent to \textit{standard error} will not be sent to
+  \textit{standard output}, regardless of the \texttt{stdOutLevel}
+  flag. For example, if \texttt{stdErrLevel} is set to
+  \texttt{quiet}, and \texttt{stdOutLevel} to \texttt{elements}, then
+  all errors will be sent to \textit{standard error} and statistics
+  will be sent to \textit{standard output}.
+}
+\setting{latex}{\textit{OS-specific} path-name}{lualatex}{This is the executable used to
+  size articles and lay out the final document. For security, it is
+  best to set this to the full path to the \LaTeX\ executable on your
+  system. Using a \texttt{pdflatex} or \texttt{lualatex} executable is
+  recommended, as the original \texttt{dvi} format output may cause
+  issues with some fonts, including the default Times clone.}
+\setting{latexCmdLine}{\LaTeX\ command-line options}{\texttt{--interaction=nonstopmode}}{
+  This advanced setting changes how the programme invokes the
+  \LaTeX\ command, both for the final output, and for the measuring of
+  element sizes. See the \LaTeX\ documentation for full details.\par
+  For example, you could add \texttt{-jobname=edition1} to change the
+  output filenames to \texttt{edition1.tex} and \texttt{edition1.pdf} and
+  the \LaTeX\ log filename to \texttt{edition1.log}.
+}
+\setting{inputWithoutCopy}{``true'' or ``false'', any case}{false}{
+  In most cases, the program will copy the text from the input files
+  into the output \texttt{.tex} file. If the input files are each
+  stand-alone (\textit{i.e.} use to external graphics or text files
+  themselves), this produces a stand-alone document. \par
+  Some users may prefer to set \texttt{inputWithoutCopy=true}, to link
+  the input files to the output file instead. This may allow a faster
+  turnaround for small edits, as the input files can be tweaked and
+  the output file run thourgh \LaTeX\ without invoking the programme
+  again. (Note, however, that the column-inches for each article would
+  not be re-calculated, possibly resulting in articles overflowing or
+  underfilling columns).\par
+  This mode is currently ignored by \texttt{mode=plain} articles,
+  which do not support the copying mode.
+}
+\setting{tolerance}{dimensionless integer, between 0 and 10000 inclusive}{500}{
+  This is an advanced option, and sets the value of the \TeX\ setting
+  \texttt{\textbackslash tolerance}. This must be no less than $0$,
+  and values over $10000$ will have no effect. Increasing this number
+  will allow extra spacing between words to produce a better layout of
+  text within a column.}  \setting{out}{out}{pathname}{This is the
+  path-name used to resolve the output directory, where the output and
+  logs of the programme are placed. The path is resolved on the
+  default filesystem and path: for most systems, this means it is
+  relative to the working directory.}
+\setting{pretolerance}{dimensionless integer, between -1 and 10000 inclusive}{-1}{
+  This is an advanced option, and sets the value of the \TeX\ setting
+  \texttt{\textbackslash pretolerance}. This should be less than
+  \texttt{tolerance} in most cases. If not set to -1, it instructs
+  \TeX\ to first attempt to break paragraphs into lines without
+  hyphenation; if this produces an adequate result, the full
+  line-break alrogithm is bypassed. This has the effect that fewer
+  hyphenated line-breaks will appear in the final document, without
+  much loss in quality.\par
+  Generally, this setting is not useful in newspapers, because the
+  text is too narrow to typeset effectively without
+  hyphenation. However, if you have an especially narrow font, or many
+  especially wide columns, then this setting may compile slightly
+  faster with some fewer hyphenation points.
+}
+\setting{emegencystretch}{\LaTeX\ function code}{\texttt{\textbackslash emergencystretch = 4pt \textbackslash multiply \#1}}{
+  This is an advanced option, and controls how the value of the \TeX\ setting
+  \texttt{\textbackslash emergencystretch} should be set.\par
+  When setting text in narrow columns, there is much less chance of a
+  natural line-break position (space or hyphenation point) occurring
+  just before the end of a line. \TeX\ responds to this by producing
+  overfull lines, with warnings in the output file, and expects the
+  user to resolve these warnings by changing the text appropriately so
+  that the line-break positions are moved. In full-width text, this
+  happens rarely, and the addition of an extra comma or filler word is
+  usually all that is needed to resolve the issue, guaranteeing
+  high-quality text output. However, this
+  becomes very onerous for newspaper text, due to the much-increased
+  number of lines, and the lower chance of a good line-break
+  combination.\par
+  In 1989, to avoid this problem, \TeX\ introduced the
+  \texttt{\textbackslash emergencystretch}
+  register (in version 3.0). This register tells \TeX how much extra
+  whitespace is permissible, per line, before it counts the line as
+  being bad and tries another combination of breaks. Higher settings
+  mean fewer overfull lines for the user to manually fix, at the cost
+  of extra horizontal whitespace.\par
+  As a rule of thumb, \texttt{\textbackslash emergencystretch} can be
+  larger when there are more average spaces per line in the input.
+  This setting holds the definition of a \LaTeX\ function, taking as
+  parameters: the number of columns~(\#1), and the current width of
+  the text on a column~(\textit{\textbackslash hsize} or \#2). It
+  should produce no output when expanded, but set the value of the
+  \textit{\textbackslash emergencystretch} register instead. This
+  syntax is compatible with the \texttt{multicols} environment, and
+  means that an appopriate setting can be used even when the column
+  width changes (see the \texttt{innerCols} setting).\par
+  An comprehensive article on choosing an optimal value is given in the
+  \TeX\ Users' Group magazine, \textit{TUGboat}, volume 38, from p.65\footnote{
+  \texttt{https://tug.org/TUGboat/tb38-1/tb118wermuth.pdf}} \par
+  It should be noted that the \textit{multicols} environment ---
+  principly used for 2--3 columns on A4 or letter paper, perhaps more
+  in landscape mode --- uses the value of \textit{4pt per column}, and
+  tends to produce very visually spaced output. The authors warn that
+  this may not be optimal, and it seems to have been intruduced when
+  the number of columns was limited to 10, so may not even have been
+  tested with dozens of columns like on a newspaper.
+  \par
+  The current default of \texttt{0.1\\textbackslash hsize} --- one
+  tenth of the column with, excluding alleys --- seems to
+  work well with even large numbers of columns.
+}
+\end{multicols}
+
+\setting{preamble\dots}{\LaTeX\ preamble code}{\textit{(see description)}}{
+  Each setting beginning with ``preamble'' is added to the document
+  preamble.\par
+  Note that the settings are sorted lexicographically, so
+  \texttt{preamble10} will run before \texttt{preamble9}, because
+  \texttt{1} comes before \texttt{9} in the dictionary --- regardless of the order of
+  lines in the \texttt{settings.properties} files.\par
+  It is also possible to add preamble lines in the individual header
+  files.\par
+  While writing a \LaTeX\ preamble is relatively advanced, it provides
+  almost complete control over your document. A number of defaults are
+  provided, which should not normally be changed. There are:-\par
+  \begin{quote}
+    \texttt{preamble!00head=\textbackslash usepackage\{indentfirst\}}
+  \end{quote}
+  to indent the first line of each paragraph;\par
+  \begin{quote}
+    \texttt{preamble!01head=\textbackslash usepackage[british]\{babel\}}
+  \end{quote}
+  to allow hyphenation within words;
+  \begin{quote}
+    \texttt{preamble!02head=\textbackslash usepackage[utf8]\{inputenc\}}
+  \end{quote}
+  to switch the input encoding to \texttt{UTF-8};\par
+  \begin{quote}
+    \texttt{preamble!03head=\textbackslash usepackage\{newtxmath,nextxtext\}}
+  \end{quote}
+  to switch the default font to use the new Times package (which must
+  come after \texttt{babel}; and
+  \begin{quote}
+    \texttt{preamble!04head=\textbackslash usepackage\{csquotes\}}
+  \end{quote}
+  , which does nothing by default, but allows you to add
+  ``\textbackslash MakeInnerQuote\{\"\}''to allow the user to type a
+  single " character in most places where a quotation mark would
+  appear (change ``MakeInnerQuote'' to ``MakeOuterQuote'' for
+  American-style quotation marks, where single-quotes are used around
+  quotations). At time of writing, there seem to be compatibility
+  issues with head-span articles in markdown when using \textbackslash
+  MakeInnerQuote.\par
+  The use of underscores~(\texttt{!}) in the propery keys indicates
+  that these are default settings; any new defaults in future versions
+  are likely to be named \texttt{preamble!04head} or similar, so while
+  you may use these names to override the default settings, you are
+  recommended to choose your own distinct convention for any
+  additional lines, to avoid
+  conflicts in future.
+}
+
+\section*{Inputs}
+
+The programme takes inputs corresponding to the logical inputs
+accepted by an editor: newspaper articles, illustrations, title lines
+and so on. Each of these inputs corresponds to a file in the input
+directory, using a defined extension (\textit{i.e.} the end of the
+filename), with a special header to configure
+how the document is to be laid out.
+
+Each input produces one or more \textit{elements} --- which may be
+\textit{article fragments} or fixed-size \textit{inserts} --- that the
+algorithm will place on the page.
+
+Each file contains the metadata to configure how it's to be treated by
+the layout algorithm in a number of \textit{header lines}. Header
+lines change the behaviour of the layout programme in producing the
+typeset newspaper, but not the behaviour of how \TeX\ typesets the
+final document. So each header line will begin with \verb!%#! as
+\TeX\ will ignore any input line starting with a \verb!%! character,
+so any line starting with a \verb!%! but not \verb!%#! can still be
+used for comments and will be ignored.
+
+Only the first 50 lines of the document may contain header lines;
+header lines after this will be ignored.
+
+Headers consist of a number of key-value pairs. The form is to use the
+Java \verb|.properties| standard, but with the addition of \verb!%#!
+at the start of every line. Thus, headers form a list of key-value
+pairs, similar to the \verb!settings.properties! input file(s).
+
+For example, the following complete input file produces a \textit{paste-up} article
+consisting of nonsense pseudolatin:-
+
+\begin{quote}
+\begin{verbatim}
+%# Type: article
+%# Head: Lorum Ipsum
+%# Preamble: \usepackage{lipsum}
+\lipsum
+\end{verbatim}
+\end{quote}
+
+The allowable header values are:-\nopagebreak
+
+\begin{multicols}{2}
+\header{Type}{case-insensitive}{\textit{None}}{
+  One of the following:-\par
+  \deft{Article}{A paste-up article}
+  \deft{Fixed}{A fixed-size insert. \textit{Width} and \textit{Height} are required.}
+  \deft{HeadSpan}{An article. \textit{Cols} is required. The headline will
+    span the number of columns given by \textit{Cols}, and the length
+    of the article will be as long as required to balance the content
+    among this number of columns. The article will be set as a unit
+    and not broken up.\par This currently uses the
+    \texttt{multicol} package, which is a part of the standard
+    \LaTeX\ distribution.}
+  \deft{Title}{Intended for the headline at the start of the paper;
+    this is a full-width insert displayed in headline font, that can
+    be customized through various headers.}
+  Other input types may be added in future.
+
+  A document that does not declare a \texttt{Type} header will not
+  produce an input in the document. This allows support for
+  complex inputs consisting of multiple files.
+}
+\header{Asset\dots}{filename}{\textit{None}}{
+  This is an advanced option that may be useful in fixing the issue of
+  articles overrunning their allocated space, if you include many
+  files together to form your newspaper article.\par
+  Normally, each article is copied to a temporary directory and
+  compiled, with \texttt{TEXMFPATH} and \texttt{\textbackslash
+    input@files} set to the input folder(s). In most cases, this is
+  sufficient to accurately render the document. However, when using
+  third-party packages to include files --- particularly through
+  Markdown, but sometimes with other packages as well --- the file may
+  be missing, and the article will not have the size it needs in the
+  final document.\par
+  In this case, you can list your assets in the Header file, with
+  keys starting ``Asset'', and values equal to the filenames relative
+  to the input folder. The assets will be copied to the temporary
+  directory and used to calculate a more accurate article size.
+}
+\header{Mode}{case-insensitive}{LaTeX}{
+  One of the following:-\par
+  \deft{LaTeX}{This is the default. The text of the article will be used
+    directly in the output \TeX\ file. Characters such as
+    \texttt{\textbackslash, \{ and \}} have special meaning, and failure to
+    follow \LaTeX\ conventions will break the document --- but any number
+    of special effects are possible. See the \texttt{markdown} setting
+    for further details.}
+  \deft{Plain}{Input is plain \texttt{utf-8} text, with paragraphs separated
+    with blank lines. Hyphens~(-), backticks~(\textasciigrave) and apostrophies~(\textasciiacute) will be
+    treated the same as in \TeX. The text will be formatted as a regular article, but
+    special effects (like \textit{italic text}) are not
+    possible. Please see also the warning in the note on Fonts and
+    Font Selection.}
+  \deft{Markdown}{Input is in a simple \texttt{markdown} encoding.
+    This lets your authors use basic decorations, such as adding
+    asterisks around text to make it \textbf{*bold*}, or underscores
+    for \textit{\textunderscore italic\textunderscore}. Markdown is a
+    widely adopted de-facto standard format.}
+}
+\header{Cols}{Natural number}{\textit{Required} for \textit{Type=Headspan}}{
+  With \textit{Type=HeadSpan}, this gives the width of the insert, in
+  columns. The article will exactly fill the stated number of
+  columns.\par
+  This uses the ``multicols'' environment, which has
+  a built-in limit of 20 internal columns. You can split the document
+  across more than 20 columns of the newspaper, but fewer columns than
+  expected may appear within the box.
+}
+\header{InnerCols}{Natural number, at least 2}{Defaults to \textit{Cols}; used only with \textit{Type=Headspan}}{
+  With \textit{Type=HeadSpan}, this gives the number of columns to
+  divide the article into to typeset; unlike \textit{Cols} which
+  determines the size of the article on the newspaper grid. By
+  default, if there are up to 20 columns, the article will match the
+  rest of the newspaper grid.\par
+  This setting can be used to set this article in columns of a
+  different width than the rest of the paper.\par
+  If this setting is more than 20 columns, then the \texttt{multicol}
+  package will report a warning, and 20 columns will be used. This is
+  a limitation of \texttt{multicol}.
+}
+\header{ColumnHint}{Natural number}{\textit{None}}{
+  This option allows some influence over the horizontal postiion of
+  \textit{Type=Fixed} and \textit{Type=HeadSpan}. It specifies the
+  preferred starting column for the insert. Note that the layout of
+  such fixed-size elements on the page does allow for some movement
+  after the initial placement, so this is not guaranteed to produce
+  the expected result in the output.\par
+  The left-most column is column ``1'', and columns count upwards to
+  the right.
+}
+\header{RuleWidth}{Length}{\textit{alleyThickWidth} setting}{
+  May be used with \textit{Type=HeadSpan} to change the width of the
+  rules between the columns within the head-span article. Set to 0 to
+  remove lines within the article itself.
+}
+\header{Width}{Length}{\textit{Required} for \textit{Insert}}{
+  Used with \textit{Type=Insert} to set the width of the fixed-size
+  insert. Extra whitespace may be added to the left and right of the
+  insert, to allow for partial columns.
+}
+\header{Height}{Length}{\textit{Required for \textit{Insert}}}{
+  Used with \textit{Type=Insert} to set the height of the fixed-size
+  insert.
+}
+\header{Head}{Text}{\textit{No headline}}{
+  Not used with \textit{Title} or \textit{Insert} types.
+  Sets a headline to be set on top of an \textit{Article} or
+  \textit{HeadSpan}. \textit{Article} headlines may be set inside the
+  column, while \textit{HeadSpan} will span the article. The headline
+  font can be chaged for each article by \texttt{Head\dots}, which
+  operates the same as the \texttt{head\dots} setting.
+}
+\header{Preamble}{\LaTeX\ header code}{\textit{None}}{
+  This applies to all input types, and it itstructs the programme to
+  add an output line to the preamble of the final document. This
+  can be used to load packages required by the article.\par
+  \textit{Caution:}\LaTeX\ provides few ways to stop one article from
+  interfering with another, and by its nature, the preamble can affect
+  the entire document. Therefore, it is recommended to limit using
+  \textit{Preamble} to importing macro packages, and to put anything
+  else into the settings file.
+}
+\header{Page}{Integer}{\textit{None}}{
+  Sometimes it's useful to put certain content on certain pages:
+  headline news is reserved for the first page; sports and comics go
+  to the back. This is an editorial decision affecting layout, and can
+  be affected by this option.
+  
+  When this is omitted, or set to zero, it has no effect: articles
+  will be set in the order they appear in the file listings, one
+  directory at a time. When set to a non-zero value, it specifies the
+  minimum page number on which the article will appear, either from
+  the front or end page of the newspaper.
+  
+  Where the value is a (positive) whole number, it gives the minimum
+  ``natural'' page number; i.e. couning the first page
+  as ``1'', the second as ``2'', and so on.
+
+  Where this is set to a negative integer, this also specifies the
+  minimum page number, but using a different count: the ``natural''
+  last page is ``-1'', the penultimate page is ``-2'', and so on,
+  counting down and backwards. NB: The number of pages here is based
+  on the simple area of articles to be typeset. Extra pages may be
+  created if this setting is used to create gaps: \textit{e.g.} if all inputs
+  have either ``Page: 2'' or ``Page: -1'', then the first page may be
+  blank; also, in some rare cases, the final article may overflow the
+  last page, and an additional page will be created \textit{after} the
+  articles are placed. This additional pages would be numbered as page
+  ``0'', ``1'', and so on, as they cannot be counted until after the
+  document is complete.
+
+  There is currently no support for double-truck/''centerfold'' pages;
+  however, it is expected that these would be counted as a single
+  page.
+
+  Note that this option may leave gaps in the newspaper, and that it
+  can only make an article appear later than it would otherwise.
+}
+\header{Date}{\LaTeX\ text}{\textit{localised date of Java programme run}}{
+  Used with \textit{Type=Title} to add an extra line, left-aligned,
+  just above the title inself. This might declare the date of
+  the newspaper edition.}
+\header{Edition}{\LaTeX\ text}{\textit{empty}}{
+  Used with \textit{Type=Title} to add an extra line, right-aligned,
+  just above the title inself. This might declare the price of
+  the newspaper.}
+\header{Price}{\LaTeX\ text}{\textit{empty}}{
+  Used with \textit{Type=Title} to add an extra line, right-aligned,
+  just below the title inself. This might declare the price of
+  the newspaper.}
+\header{TagLine}{\LaTeX\ text}{\textit{empty}}{
+  Used with \textit{Type=Title} to add an extra line, left-aligned,
+  just below the title inself. This might declare the motto of
+  the newspaper.}
+\header{Font\dots}{Font definition}{\textit{54pt Almedera Bold}}{
+  Used with \textit{Type=Title} to configure the font for the title
+  text itself. See the \texttt{head\dots} setting (in the settings
+  section) for a description of the available headers.
+}
+\header{Head\dots}{Font definition}{\textit{none}}{
+  If any of the \texttt{Head\dots} font headers are specified, the
+  headline for the article will be set in the supplied font. This
+  allows different styles for each headline, in the manner of a
+  tabloid. Each overrides the corresponding \texttt{head\dots} setting.
+  \par
+  If \texttt{headSize} is overridden by \texttt{FontSize}, the default
+  value of \texttt{FontSpacing} becomes $\textit{FontSize} +
+  2\textrm{pt}$.
+  \par
+  While modern broadsheets do not typically use different headline
+  fonts per article, historical newspapers certainly did: using larger
+  headlines to draw the eye to more important stories.
+  \par
+  It is suggested to consider \textit{Headseries=bx} on wider
+  \textit{Type=Headspan} articles, where this font definition is provided.
+}
+\header{Date\dots}{Font definition}{\textit{8pt Times}}{
+  Used with \textit{Type=Title} to configure the font for the date
+  line itself. This works identically to \texttt{Font\dots}, but
+  replacing the prefix ``Font'' with ``Date''.
+}
+\header{Price\dots}{Font definition}{\textit{8pt Times}}{
+  Used with \textit{Type=Title} to configure the font for the price
+  line itself. This works identically to \texttt{Font\dots}, but
+  replacing the prefix ``Font'' with ``Price''.
+}
+\header{Edition\dots}{Font definition}{\textit{8pt Times}}{
+  Used with \textit{Type=Title} to configure the font for the edition
+  line itself. This works identically to \texttt{Font\dots}, but
+  replacing the prefix ``Font'' with ``Edition''.
+}
+\header{TagLine\dots}{Font definition}{\textit{8pt Times}}{
+  Used with \textit{Type=Title} to configure the font for the tag
+  line itself. This works identically to \texttt{Font\dots}, but
+  replacing the prefix ``Font'' with ``TagLine''.
+}
+\header{LeftBox\dots}{\LaTeX\ text}{\textit{empty}}{
+  Used with \textit{Type=Title} to add the given content centered in a
+  box to the left of the title. Such boxes are typically used to
+  display logos or advertise pages of potential interest to the
+  reader.
+
+  Additionally, the following related headers can configure the box
+  itself:-\par
+  \deft{LeftBoxWidth}{ Sets the width of the box; default \textit{1in}. }
+  \deft{LeftBoxHeight}{ Sets the height of the box; default is
+    \textit{LeftBoxWidth} for a square box.}
+  \deft{LeftBoxRaise}{ Sets the vertical offset of the box's content. Default is
+    given by $\frac{\mbox{\textit{LeftBoxWidth}}}{2} -
+    0.05\mbox{in} = 0.45$in, assuming the default LeftBoxWidth.
+  }
+  \deft{LeftBox\dots}{ You can also set the font for the left box by
+    specifying \texttt{LeftBoxCommand} or \texttt{LeftBoxFamily} etc;
+    see \texttt{Font\dots}. Note that the default is the document main
+    font.}
+}
+\header{RightBox\dots}{\LaTeX\ text}{\textit{empty}}{
+  As \textit{LeftBox\dots} except that this applies to a box shown to
+  the right of the title. The lengths for each box must be configured
+  separately.
+}
+\header{RaiseLength}{Length}{\textit{10pt}}{
+  The top line of the title (date and edition) is not allocated any
+  space, as to do so would make the newspaper title appear too low on
+  the page.\par This setting is the distance that the top line should
+  be raised up, into the page borders. The value of
+  \texttt{HeadSpacing} is typically a good starting point for tweaking
+  this value.
+}
+\end{multicols}
+
+\section*{Command-Line}
+
+The programme is distributed as a \verb!.jar! file: an archive of
+executable Java code. To run the programme, you will need to execute
+the \verb!java.exe! executable:
+
+\begin{quote}
+\begin{verbatim}
+  java.exe -jar layout.jar srcdir1/ srcdir2/
+\end{verbatim}
+\end{quote}
+
+Here, \verb!srcdir1! and \verb!srcdir2! are paths to the
+\textit{source directories} containing your newspaper inputs.
+
+This will show a console window, showing some information about the
+newspaper layout, and any errors that are raised by \LaTeX.
+
+All of this information shown on the console is also available in a
+log file inside the output directory, provided that the output
+directory setting can be read, and points to a usable directory. You
+may prefer to disable the console window; in which case, use the
+windowless version~\texttt{java.exe} instead:-
+
+\begin{quote}
+\begin{verbatim}
+  javaw.exe -jar layout.jar srcdir1/ srcdir2/
+\end{verbatim}
+\end{quote}
+
+Note that, without a console window, errors relating to discovery of
+the output directory or creation of the log file, will not be shown.
+
+\end{document}

@@ -1,0 +1,176 @@
+ALGORITHM FOR LAYING OUT NEWSPAPERS WITH LaTeX: REFERENCE IMPLEMENTATION
+
+Robert Lee, March 2024
+
+
+PURPOSE
+
+The user prepares a title,  inserts and articles,  in standard LaTeX.
+These articles can be of various forms,  including traditional paste-
+up articles, fixed-size inserts and rectilinear multi-column articles
+with headers.
+
+A programme lays out these articles, into a multi-page newspaper PDF.
+All aspects of the newspaper are customizable;  some knowledge of TeX
+and LaTeX is assumed. Each article may be processed multiple times to
+determine its proper sizing.
+
+
+INSTALLATION
+
+PdfLaTeX or LuaLaTeX is required.  Standard LaTeX will also produce a
+working layout;  however, the generated DVI file does not always have
+all generated text, and support for unicode characters is limited.
+
+A working Java JRE is also required.  OpenJDK-11.0.2 was used at time
+of writing. You only need a JDK if you want to modify the source code
+and recompile.
+
+Finally,  you will need a plain text editor.  Any editor can be used,
+but "Notepad++" is a reasonable choice. Do not use Microsoft WordPad,
+or a word-processing application,  because these add extra characters
+to the source files, that will confuse the newspaper programme.
+
+All modern desktop operating systems include a package manager, which
+can install these dependencies.
+
+
+TUTORIAL: YOUR FIRST PAPER
+
+Firstly, create a new directory,  to contain the source code for your
+newspaper.  This is known as the "source" directory,  but it can have
+any name: we recommend a brief title followed by the edition number.
+
+LaTeX likes to keep a number of ancillary files when it runs,  so we
+don't keep the output in the same directory as the sources,  to avoid
+clutter.  Create a new directory for the output, with the same parent
+directory as the source directory you created above.  Again, this can
+have any name but adding "pdf" after the name of the source directory
+seems a good convention.  This second directory is called the "output
+directory", and we'll use it shortly.  For now, go back to the source
+directory.
+
+
+Now create a file named "settings.properties" inside that directory.
+
+The file settings.properties can be used to fine-tune your newspaper,
+but for now it only needs two required settings, so add the following
+line to the file:
+
+ latex=lualatex
+
+If using pdflatex, replace "lualatex" with "pdflatex" instead  -  You
+could also use the fully qualified path-name to the latex executable
+to use a specific version, perhaps not on the system classpath.
+
+The second setting is the location of your output directory. Say your
+output directory is named "expdf", and is in the current directory:
+
+ output=./expdf
+
+The "./" is taken to mean "relative to the current working directory"
+(CWD; where you run the programme from; this is usually the parent of
+the source directory); you can also copy and paste the full path name
+to the directory.  Some operating systems will use a colon  (:)  or a
+backslash (\), instead of a slash (/), but slashes work on most.
+
+Next, create a newspaper headline file, also in the source directory.
+We want this to be the first file included,  so name it "0title.tex",
+with a leading numeral zero,  so it appears as the very first file in
+the directory listing.
+
+To start with, your 0title.tex file could look like this:
+
+%# Type: TITLE
+%# Width: fill
+%# Height: 1in
+%# Price: Price 10p
+%# Preamble: \\usepackage{almendra}
+Newspaper Title Here
+
+
+This extremely simple example will produce a title, using the default
+font 54-point Almendra Bold Italic.  The title is simply,  "Newspaper
+Title Here". It also produces a suggested price for your paper.
+
+You can modify this later,  but for now, we want to add some articles
+and inserts.
+
+Create a number of ".tex" files containing your articles. Each one is
+added in the order it appears in the directory listing,  so it's good
+practise to start each one with a three-digit number counting in 10s.
+That way,  if you want to add an extra article later,  you can easily
+insert it into the gap.
+
+So the first article might be "010lipsum.tex":
+
+%# Type: article
+%# Head: Lorum Ipsum
+%# Preamble: \\usepackage{lipsum}
+\lipsum
+
+The "type" header declares the type of the insert as "article":  this
+default means a paste-up article that will be set into a long column,
+that is then cut up and placed onto the paper.
+
+You should start each article as the "article" type; because they can
+be split up so many ways, it gives the algorithm the most flexibility
+to come up with a good layout.  You might want to change it later, or
+the algorithm may even set it as a different type, but "article" is a
+good first choice.
+
+The "Head" setting is the headline for the article;  this is set atop
+the article is a larger font and a bold typeface.
+
+The "Preable" line tells LaTeX to load the "lipsum" package.  I don't
+want to influence the type of newspaper you want to write, so this is
+package simply generates a large volume of pseudo-Latin nonsense that
+typesetters can use to consider their layout options.
+
+Finally, we come to the text of the article.  Normally, this is where
+you'd write reams of prose to go into your paper, but here, we simply
+say "\lipsum", which is replaced with lipsum package's nonsense text.
+
+
+Now,  let's include a photograph.  Save a JPEG or PNG format image to
+the source directory - and then include it in a fixed-size insert, by
+creating a file named "020image.tex":
+
+%# Type: fixed
+%# Width: 6in
+%# Height: 4in
+%# Preamble: \\usepackage{graphicx}
+\begin{center}
+\inculdegraphics[width=0.9\columnwidth]{photo.jpeg}
+\end{center}
+
+
+Change "photo.jpeg" to match the name of your file  -  but be sure to
+keep the braces (curly brackets) around the filename.
+
+Because most photos have an aspect ratio of 3:2, we set the insert to
+6in:4in in size. The photo itself is set in a "center" environment to
+ensure it's centred in the output document.  The size of the photo is
+set to 90 percent (0.9 times) the value of "\columnwidth",  the width
+available in the fixed-size insert.
+
+
+Now, let's run the programme and produce our first newspaper.  Switch
+to the parent directory, and run this:
+
+java -jar layout.jar new1/
+
+Replace "new1" with your source directory.
+
+If all goes well, your compiled newspaper PDF file will appear inside
+the output directory.  Otherwise,  check for ".log" files in the same
+output directory for further details.
+
+This whistle-stop tutorial shows just some of the things that you can
+do. To get the most out of the newspaper layout package, please refer
+to the full manual.
+
+NB: The title looks rather compact, until you have sufficient text on
+the page to fill out enough columns.
+
+Happy editing.
