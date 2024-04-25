@@ -880,7 +880,7 @@ Catalogue\footnote{\texttt{https://tug.org/FontCatalogue/allfonts.html}}.
   especially wide columns, then this setting may compile slightly
   faster with some fewer hyphenation points.
 }
-\setting{emegencystretch}{\LaTeX\ function code}{\texttt{\textbackslash emergencystretch = 4pt \textbackslash multiply \#1}}{
+\setting{emegencystretch}{\LaTeX\ function code}{\texttt{\textbackslash emergencystretch = 0.1 \textbackslash hsize}}{
   This is an advanced option, and controls how the value of the \TeX\ setting
   \texttt{\textbackslash emergencystretch} should be set.\par
   When setting text in narrow columns, there is much less chance of a
@@ -923,7 +923,7 @@ Catalogue\footnote{\texttt{https://tug.org/FontCatalogue/allfonts.html}}.
   the number of columns was limited to 10, so may not even have been
   tested with dozens of columns like on a newspaper.
   \par
-  The current default of \texttt{0.1\\textbackslash hsize} --- one
+  The current default of \texttt{0.1\textbackslash hsize} --- one
   tenth of the column with, excluding alleys --- seems to
   work well with even large numbers of columns.
 }
