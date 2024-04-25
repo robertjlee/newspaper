@@ -1,12 +1,12 @@
 all : docs layout.jar
 
-docs : manual/manual.pdf out/demo.pdf MarkdownTutorial.pdf
+docs : manual/manual.pdf demoout/demo.pdf MarkdownTutorial.pdf
 
 manual/manual.pdf: manual/manual.tex
 	cd manual; lualatex --interaction=nonstopmode manual.tex; cd ..
 
-out/demo.pdf: demo/settings.properties layout.jar demo/000title.tex demo/010lipsum.tex
-	rm -f out/*; java -jar layout.jar demo/
+demoout/demo.pdf: demo/settings.properties layout.jar demo/000title.tex demo/010lipsum.tex
+	rm -rf demoout; mkdir demoout; java -jar layout.jar demo/
 
 MarkdownTutorial.pdf : MarkdownTutorial.md
 	lualatex --interaction=nonstopmode --jobname=MarkdownTutorial \
