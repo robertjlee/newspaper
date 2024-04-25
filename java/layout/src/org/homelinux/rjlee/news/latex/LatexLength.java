@@ -79,8 +79,8 @@ public class LatexLength extends LatexInteraction {
         if (p.exitValue() != 0) {
             logger.quiet().println("  Process completed: " + p.exitValue());
         }
-        double length = LengthParser.readLength(readLength.toString()) + fragments.stream().mapToDouble(d -> d).sum()
-                + LengthParser.readLength(readDepth.toString());
+        double length = LengthParser.readLength(readLength.toString(), true) + fragments.stream().mapToDouble(d -> d).sum()
+                + LengthParser.readLength(readDepth.toString(), true);
         logger.dumpAll().println("  Calculated length: " + readLength + "=>" + length + "in");
         return length;
     }

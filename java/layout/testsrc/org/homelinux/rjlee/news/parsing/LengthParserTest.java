@@ -30,7 +30,7 @@ class LengthParserTest {
                     "-86.72400086724001pts, 227.905408\n"
     )
     void readLength(String input, double expected) {
-        assertEquals(expected, LengthParser.readLength(input), 0.000001);
+        assertEquals(expected, LengthParser.readLength(input, true), 0.000001);
     }
 
     @ParameterizedTest
