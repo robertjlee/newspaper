@@ -840,6 +840,18 @@ Catalogue\footnote{\texttt{https://tug.org/FontCatalogue/allfonts.html}}.
   output filenames to \texttt{edition1.tex} and \texttt{edition1.pdf} and
   the \LaTeX\ log filename to \texttt{edition1.log}.
 }
+\setting{texinputs}{Environment variable}{\texttt{:}}{This setting
+  overrides the \texttt{TEXINPUTS} enveronment variable when running
+  the \LaTeX\ programme. \LaTeX\ interprets this as a colon-delimited
+  list of absolute or relative pathnames to search for inputs.\par
+  Adding the absolute path of an input source, then a colon, may solve a number of
+  problems when an input source cannot be found.\par
+  This is also useful to inform \TeX\ of the location of additional
+  packages that you have downloaded but not installed on your system.\par
+  Ordinarily, this property should end in a trailing colon, to
+  indicate to \LaTeX\ that your system's installation path should be
+  used for any standard includes.\par
+}
 \setting{inputWithoutCopy}{``true'' or ``false'', any case}{false}{
   In most cases, the program will copy the text from the input files
   into the output \texttt{.tex} file. If the input files are each
@@ -1048,7 +1060,7 @@ The allowable header values are:-\nopagebreak
   articles overrunning their allocated space, if you include many
   files together to form your newspaper article.\par
   Normally, each article is copied to a temporary directory and
-  compiled, with \texttt{TEXMFPATH} and \texttt{\textbackslash
+  compiled, with \texttt{\textbackslash
     input@files} set to the input folder(s). In most cases, this is
   sufficient to accurately render the document. However, when using
   third-party packages to include files --- particularly through
@@ -1058,7 +1070,8 @@ The allowable header values are:-\nopagebreak
   In this case, you can list your assets in the Header file, with
   keys starting ``Asset'', and values equal to the filenames relative
   to the input folder. The assets will be copied to the temporary
-  directory and used to calculate a more accurate article size.
+  directory and used to calculate a more accurate article size. Use
+  one asset setting per file.
 }
 \header{Mode}{case-insensitive}{LaTeX}{
   One of the following:-\par

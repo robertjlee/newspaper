@@ -29,7 +29,7 @@ public class LatexProcessFactory implements ShellProcessFactory {
 
         // the trailing colon means "add the default value of TEXINPUTS
         processBuilder.environment()
-                        .put("TEXINPUTS", "/home/kiki/temp/Documents/Projects/latex/shiny/5/in/:");
+                        .put("TEXINPUTS", settings.getTexInputs());
 
         processBuilder.directory(wdPath.toFile());
 

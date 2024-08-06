@@ -79,6 +79,7 @@ public class Settings implements PreambleLinesSupplier {
 
     private Path out;
 
+    private String texInputs;
     private String latex;
     private String[] latexCmdLine;
 
@@ -184,6 +185,7 @@ public class Settings implements PreambleLinesSupplier {
 
         this.inputFilters = Arrays.stream(properties.getProperty("inputFilter", ".tex,.md,.txt,.text").split(",")).map(String::trim).filter(s -> !s.isEmpty()).toArray(String[]::new);
         this.out = fileSystem.getPath(properties.getProperty("out", "out"));
+        this.texInputs = properties.getProperty("texinputs", ":");
         this.latex = properties.getProperty("latex", "pdflatex");
         this.latexCmdLine = properties.getProperty("latexCmdLine", "--interaction=nonstopmode").split("\\s+");
         this.jobName = properties.getProperty("jobName", "newspaper");
@@ -440,6 +442,10 @@ public class Settings implements PreambleLinesSupplier {
         return continuedFromPageText;
     }
 
+    public String getTexInputs() {
+        return texInputs;
+    }
+
     @Override
     public String toString() {
         return "Settings{" +
@@ -464,6 +470,7 @@ public class Settings implements PreambleLinesSupplier {
                 ", inputFilters=" + Arrays.toString(getInputFilters()) +
                 ", out=" + getOut() +
                 ", jobName=" + getJobName() +
+                ", texinputs=" + getTexInputs() +
                 ", latex='" + getLatex() + '\'' +
                 ", latexCmdline=" + Arrays.toString(getLatexCmdLine()) +
                 ", extraPreambleLines=" + extraPreambleLines +
