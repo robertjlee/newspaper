@@ -1,6 +1,9 @@
 package org.homelinux.rjlee.news.parsing;
 
 public interface LengthParser {
+
+    double PT_PER_IN = 0.013837;
+
     static double readLength(final String str) {
         return readLength(str, false);
     }
@@ -32,6 +35,6 @@ public interface LengthParser {
         // LaTeX overflows 16384 points when going over about 5m of text; this hack
         // allows us to support longer article lengths.
         double len = negativeMeansOverflow && pts < 0 ? 16384 - pts : pts;
-        return len * 0.013837;
+        return len * PT_PER_IN;
     }
 }

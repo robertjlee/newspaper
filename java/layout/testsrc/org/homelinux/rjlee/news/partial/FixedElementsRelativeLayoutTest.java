@@ -188,7 +188,7 @@ class FixedElementsRelativeLayoutTest {
         }
 
         @Override
-        public void copyTo(PrintWriter out, Path outPath) throws IOException {
+        public void copyToImpl(PrintWriter out, Path outPath) throws IOException {
 
         }
 

@@ -78,7 +78,7 @@ public class Insert implements Part, Input, FixedSize {
         return null;
     }
 
-    public void copyTo(PrintWriter out, Path outPath) throws IOException {
+    public void copyToImpl(PrintWriter out, Path outPath) throws IOException {
         copyToTex(headers.getInputMode(), settings, out, outPath);
     }
 

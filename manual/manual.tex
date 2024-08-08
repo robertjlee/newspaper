@@ -1146,6 +1146,23 @@ The allowable header values are:-\nopagebreak
   font can be chaged for each article by \texttt{Head\dots}, which
   operates the same as the \texttt{head\dots} setting.
 }
+\header{BoxRule}{Length}{0.0}{
+  This applies to \textit{Type=Fixed} and \textit{Type=HeadSpan}
+  inputs. If non-zero, \texttt{\textbackslash fboxwidth} will be set
+  to this length, and the article will be surrounded in an
+  \texttt{\textbackslash fbox}, creating a simple closed line-border
+  of this thickness. This is a simple way to make individual elements
+  stand out from the surrounding text. See also \textit{BoxSep}.
+}
+\header{BoxSep}{Length}{3pt}{
+  This applies to \textit{Type=Fixed} and \textit{Type=HeadSpan}
+  inputs, but only where \textit{BoxRule} is non-zero. This specifies
+  the gap between the page element and the bounding box. The value of
+  \texttt{\textbackslash fboxsep} will be set to this length while
+  rendering the input.\par Note that the width (and height, for
+  \textit{Type=Fixed}) of the article are reduced by \textit{BoxRule}
+  and \textit{BoxSep} on both edges.
+}
 \header{Preamble}{\LaTeX\ header code}{\textit{None}}{
   This applies to all input types, and it itstructs the programme to
   add an output line to the preamble of the final document. This

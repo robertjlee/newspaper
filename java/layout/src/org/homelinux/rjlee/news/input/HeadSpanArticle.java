@@ -57,10 +57,15 @@ public class HeadSpanArticle extends ArticleText implements FixedSize {
 
     @Override
     public void copyTo(PrintWriter out, Path outPath) throws IOException {
+        FixedSize.super.copyTo(out, outPath);
+    }
+
+    @Override
+    public void copyToImpl(PrintWriter out, Path outPath) throws IOException {
         out.println("\\vbox{");
         out.printf("\\begingroup\\setlength{\\columnsep}{%fin}\n", getSettings().getAlleyWidth());
         out.printf("\\setlength{\\columnseprule}{%fin}\n", ruleWidth);
-        double widthForSizing = widthForSizing();
+        double widthForSizing = widthForSizing() - margin();
         out.printf("\\textwidth=%fin\\hsize=%fin" + // in case numCols=1, we need the text width & hsize too.
         "\\linewidth=%fin\n",
                 widthForSizing, widthForSizing, widthForSizing);// Multicols uses \linewidth to determine the box width.
