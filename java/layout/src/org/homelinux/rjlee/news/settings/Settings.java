@@ -36,7 +36,8 @@ public class Settings implements PreambleLinesSupplier {
     private enum Flag {
         allowTexFileOverwrite,
         inputWithoutCopy,
-        defaultFontFamilyFromHeaders
+        defaultFontFamilyFromHeaders,
+        enableLaTeXHooks
     }
 
     /**
@@ -408,6 +409,8 @@ public class Settings implements PreambleLinesSupplier {
     public boolean isDefaultFontFamilyFromHeaders() {
         return flags.contains(Flag.defaultFontFamilyFromHeaders);
     }
+
+    public boolean isEnableLateXHooks() { return flags.contains(Flag.enableLaTeXHooks); }
 
     public DebugLevel getStdOutLevel() {
         return stdOutLevel;

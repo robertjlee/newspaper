@@ -36,6 +36,7 @@ public interface Input extends PreambleLinesSupplier {
 
     default void copyToTex(Headers.InputMode inputMode, final Settings settings, final PrintWriter out, Path outPath) throws IOException {
         out.println("\\setemergencystretch\\numnewscols\\hsize");
+        if (settings.isEnableLateXHooks()) getHeaders().ifHeader("BeforeContent", out::println);
         try (BufferedReader in = Files.newBufferedReader(path())) {
             // plain currently only supports the copy, not the \input, mode, because of the way comments are stripped.
             if (settings.isInputWithoutCopy() || inputMode != Headers.InputMode.LATEX) {
@@ -58,6 +59,7 @@ public interface Input extends PreambleLinesSupplier {
             }
 
         }
+        if (settings.isEnableLateXHooks()) getHeaders().ifHeader("AfterContent", out::println);
     }
 
     default void logInput(Logger logger) {

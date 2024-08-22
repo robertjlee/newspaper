@@ -27,7 +27,7 @@ class SettingsTest {
             "markdown=\\usepackage[smartEllipses,fancyLists]{markdown}, continuedOnPageText=\\makebox[\\textwidth]{\\hfill\\textit{\\scriptsize Continued on page \\otherpage\\dots\\hspace{-1em}}}, continuedFromPageText=\\makebox[\\textwidth]{\\textit{\\scriptsize\\hspace{-1em}\\dots continued from page \\otherpage}\\hfill}, " +
             "logFile=layout.log, stdOutLevel=ELEMENTS, stdErrLevel=SILENT, logFileLevel=ALGORITHM, " +
             "headerFont=\\fontencoding{TU}\\fontfamily{\\rmdefault}\\fontseries{bc}\\fontshape{n}\\fontsize{18}{20}\\selectfont, " +
-            "allowTexFileOverwrite=false, inputWithoutCopy=false, defaultFontFamilyFromHeaders=false}";
+            "allowTexFileOverwrite=false, inputWithoutCopy=false, defaultFontFamilyFromHeaders=false, enableLaTeXHooks=false}";
 
     private int returnValue = Integer.MIN_VALUE; // not called
 
@@ -59,6 +59,7 @@ class SettingsTest {
         p.put("defaultFontFamilyFromHeaders", "true");
         p.put("defaultTeletypeFamily", "cmr");
         p.put("defaultTeletypeSeries", "it");
+        p.put("columnStrategy", "fillFirst");
         p.put("out", "path2");
         p.put("jobName", "news");
         p.put("latex", "/path/to/lualatex");
@@ -78,10 +79,11 @@ class SettingsTest {
         p.put("emergencyStretch", "{}");
         p.put("continuedOnPageText", "(Ctd. page \\otherpage)\\hfill");
         p.put("continuedFromPageText", "\\hfill(From page \\otherpage)");
+        p.put("enableLaTeXHooks", "truE");
 
         Settings s = new Settings(p);
         assertEquals("Settings{pageWidth=1.1, pageHeight=2.2, columnWidth=3.3, columnHeight=5.5, " +
-                "alleyWidth=6.6, alleyHeight=7.7, alleyThickWidth=8.8, alleyThickHeight=9.9, minSideMargins=10.1, " +
+                "alleyWidth=6.6, alleyHeight=7.7, alleyThickWidth=8.8, alleyThickHeight=9.9, columnStrategy=FILLFIRST, minSideMargins=10.1, " +
                 "defaultFontEncoding=T1, defaultFontSize=14, defaultFontSizeClo=sizes, defaultFontFamily=cmr, defaultFontSeries=it, defaultTeletypeFamily=cmr, defaultTeletypeSeries=it, " +
                 "tolerance=1000, emergencyStretch={}, " +
                 "inputFilters=[.mDown, .mUp], out=path2, jobName=news, latex='/path/to/lualatex', " +
@@ -89,7 +91,7 @@ class SettingsTest {
                 "markdown=\\usepackage[smartEllipsis=true]{markdown}, continuedOnPageText=(Ctd. page \\otherpage)\\hfill, continuedFromPageText=\\hfill(From page \\otherpage), " +
                 "logFile=log.txt, stdOutLevel=QUIET, stdErrLevel=DUMP_ALL, logFileLevel=ELEMENTS, " +
                 "headerFont=\\null, " +
-                "allowTexFileOverwrite=true, inputWithoutCopy=true, defaultFontFamilyFromHeaders=true}", s.toString());
+                "allowTexFileOverwrite=true, inputWithoutCopy=true, defaultFontFamilyFromHeaders=true, enableLaTeXHooks=true}", s.toString());
     }
 
     @Test
