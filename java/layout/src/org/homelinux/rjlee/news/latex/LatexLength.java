@@ -5,6 +5,8 @@ import org.homelinux.rjlee.news.logging.Logger;
 import org.homelinux.rjlee.news.logging.TeeWriter;
 import org.homelinux.rjlee.news.parsing.LengthParser;
 import org.homelinux.rjlee.news.settings.Settings;
+import org.homelinux.rjlee.news.stream.FakePipedReader;
+import org.homelinux.rjlee.news.stream.FakePipedWriter;
 
 import java.io.*;
 import java.nio.file.FileSystems;
@@ -19,7 +21,7 @@ import java.util.stream.Stream;
  */
 public class LatexLength extends LatexInteraction {
     private final Stream<String> preambleLines;
-    private final PipedReader pr = new PipedReader();
+    private final FakePipedReader pr = new FakePipedReader();
     private final double width;
     private final List<Double> fragments;
     private final ShellProcessFactory latexProcessFactory;
@@ -50,7 +52,7 @@ public class LatexLength extends LatexInteraction {
     }
 
     public PrintWriter writer() throws IOException {
-        return new PrintWriter(new BufferedWriter(new PipedWriter(pr)));
+        return new PrintWriter(new BufferedWriter(new FakePipedWriter(pr)));
     }
 
     public double calculate() {
@@ -117,6 +119,7 @@ public class LatexLength extends LatexInteraction {
     }
 
     private void writeTempFile(Path tmpDir) throws IOException {
+        pr.close(); // output is complete by this point.
         // create a blank aux file to suppress the warning:
         Path artAux = tmpDir.resolve("art.aux");
         //noinspection EmptyTryBlock

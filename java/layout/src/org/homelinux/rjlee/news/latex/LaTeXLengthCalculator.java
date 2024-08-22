@@ -33,6 +33,7 @@ public class LaTeXLengthCalculator implements LengthCalculator {
             PrintWriter quiet = logger.quiet();
             quiet.println("I/O Error calculating length of LaTeX article:");
             e.printStackTrace(quiet);
+            throw new RuntimeException(e);
         }
         articleText.getHeaders().assets().forEach(asset -> {
             try {

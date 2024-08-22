@@ -12,7 +12,6 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -398,18 +397,15 @@ class LatexLengthTest {
         try (PrintWriter pw = latexLength.writer()) {
             pw.println("My document here!");
         }
-        ExecutionException ee = assertThrows(ExecutionException.class, latexLength.calculate()::get);
-        Throwable ex = ee.getCause();
+        RuntimeException ex = assertThrows(RuntimeException.class, latexLength::calculate);
 
-        assertAll("Nested exception checks",
-                () -> assertInstanceOf(RuntimeException.class, ex),
-                () -> assertAll(
-                        () -> assertEquals("Failed to calculate article length: Process completed without producing length: 0", ex.getMessage()),
-                        () -> assertEquals("", sentToLaTeX.toString()), // TODO: can we write to the process rather than a temp file?
-                        () -> assertEquals(EXPECTED_LATEX + "\n  Process completed without length: 0",
-                                // skip the first line; the tmpdir can change:
-                                Arrays.stream(logger.dumpAllCollected().split("\n")).skip(1).collect(Collectors.joining("\n")))
-                ));
+        assertAll(
+                () -> assertEquals("Failed to calculate article length: Process completed without producing length: 0", ex.getMessage()),
+                () -> assertEquals("", sentToLaTeX.toString()), // TODO: can we write to the process rather than a temp file?
+                () -> assertEquals(EXPECTED_LATEX + "\n  Process completed without length: 0",
+                        // skip the first line; the tmpdir can change:
+                        Arrays.stream(logger.dumpAllCollected().split("\n")).skip(1).collect(Collectors.joining("\n")))
+        );
     }
 
     @Test
@@ -418,12 +414,12 @@ class LatexLengthTest {
     }
 
     @Test
-    void calculate() throws IOException, ExecutionException, InterruptedException {
+    void calculate() throws IOException {
         receivedFromLaTeX.append("ART HEIGHT: 14.56in\nART DEPTH: 0");
         try (PrintWriter pw = latexLength.writer()) {
             pw.println("My document here!");
         }
-        double result = latexLength.calculate().get();
+        double result = latexLength.calculate();
         assertAll(
                 () -> assertEquals(14.56 + fragments.stream().mapToDouble(d -> d).sum(), result, 0.00001),
                 () -> assertEquals("", sentToLaTeX.toString()) // TODO: can we write to the process rather than a temp file?
@@ -439,19 +435,17 @@ class LatexLengthTest {
 
         assertAll(
                 () -> {
-                    ExecutionException ex = Assertions.assertThrows(ExecutionException.class, () -> {
-                        latexLength.calculate().get();
+                    RuntimeException ex = Assertions.assertThrows(RuntimeException.class, () -> {
+                        latexLength.calculate();
                     });
-                    assertAll("Exception details",
-                            () -> assertInstanceOf(RuntimeException.class, ex.getCause()),
-                            () -> assertEquals("Not implemented to read length [invalid]; try mm, inches or TeX points?", ex.getCause().getMessage()));
+                    assertEquals("Not implemented to read length [invalid]; try mm, inches or TeX points?", ex.getMessage());
                 },
                 () -> assertEquals("", sentToLaTeX.toString()));
     }
 
 
     @Test
-    void processErrorOnLaunch() throws IOException, ExecutionException, InterruptedException {
+    void processErrorOnLaunch() throws IOException {
         latexProcessFactory = new MockShellProcessFactory(receivedFromLaTeX, new StringBuilder(), sentToLaTeX, false, true);
         fragments = Arrays.asList(3., 4.1);
         logger = new CapturingLogger();
@@ -462,7 +456,7 @@ class LatexLengthTest {
             pw.println("My document here!");
         }
 
-        double result = latexLength.calculate().get();
+        double result = latexLength.calculate();
         assertAll(
                 () -> assertEquals(0.0, result, 0.00001),
                 () -> assertEquals("", sentToLaTeX.toString()),
@@ -473,14 +467,14 @@ class LatexLengthTest {
     }
 
     @Test
-    void processFailed() throws IOException, ExecutionException, InterruptedException {
+    void processFailed() throws IOException {
         receivedFromLaTeX.append("ART HEIGHT: 1in\nART DEPTH: 0");
         latexProcessFactory.setExitCode(-1);
         try (PrintWriter pw = latexLength.writer()) {
             pw.println("My document here!");
         }
 
-        double calculated = latexLength.calculate().get();
+        double calculated = latexLength.calculate();
         assertAll(
                 () -> assertEquals(8.1, calculated, 0.00001),
                 () -> assertEquals("", sentToLaTeX.toString()),
@@ -492,7 +486,7 @@ class LatexLengthTest {
     }
 
     @Test
-    void processDied() throws IOException, ExecutionException, InterruptedException { // Not sure if this is a valid test case; it looks like the API can return null, but I'm not entirely sure.
+    void processDied() throws IOException { // Not sure if this is a valid test case; it looks like the API can return null, but I'm not entirely sure.
         // best to test on the safe side!
 
         latexProcessFactory = new MockShellProcessFactory(receivedFromLaTeX, new StringBuilder(), sentToLaTeX, true, false);
@@ -505,7 +499,7 @@ class LatexLengthTest {
             pw.println("My document here!");
         }
 
-        double result = latexLength.calculate().get();
+        double result = latexLength.calculate();
         assertAll(
                 () -> assertEquals(0.0, result, 0.00001),
                 () -> assertEquals("", sentToLaTeX.toString()),
