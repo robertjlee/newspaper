@@ -664,6 +664,12 @@ Catalogue\footnote{\texttt{https://tug.org/FontCatalogue/allfonts.html}}.
     \textit{head\dots} headers, and use this command instead.
   }
 }
+\setting{columnStrategy}{\texttt{balance} or \texttt{fillFirst}}{\texttt{balance}}{
+  If set to \texttt{fillFirst}, then each page will be filled with columns before the next
+  page is begun, even if there are insufficient columns to fill the paper.\par
+  if set to \textt{balance}, then missing columns will be distributed between pages, to ensure
+  that the paper looks as balanced as possible.
+}
 \setting{markdown}{\LaTeX\ header code}{\texttt{\textbackslash
     usepackage\[smartEllipses,fancyLists\]\{markdown\}}}{
     The programme supports accepting input in markdown format using the

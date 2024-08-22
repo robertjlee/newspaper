@@ -71,7 +71,7 @@ public class NewspaperLayoutImpl implements NewspaperLayout {
         readInputs(dirs);
         // calculate the number of columns per page
         double columnInches = inputs.stream().mapToDouble(Input::columnInches).sum();
-        ColumnCalculator columnPageResult = ColumnCalculator.calculateColumnsPerPage(columnInches, settings.getColumnHeight(), settings.getMaxColsPerPage());
+        ColumnCalculator columnPageResult = ColumnCalculator.calculateColumnsPerPage(settings, columnInches, settings.getColumnHeight(), settings.getMaxColsPerPage());
         colsPerPage = columnPageResult.getColsPerPage(); // c
 
         PrintWriter algorithm = logger.algorithm();

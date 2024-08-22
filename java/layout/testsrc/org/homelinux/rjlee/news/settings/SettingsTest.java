@@ -20,9 +20,9 @@ class SettingsTest {
 
     public static final String DEFAULT_SETTINGS = "Settings{pageWidth=25.590551181102363, pageHeight=29.52755905511811, columnWidth=1.5, " +
             "columnHeight=26.5748031496063, alleyWidth=0.125, alleyHeight=0.125, alleyThickWidth=0.0125, " +
-            "alleyThickHeight=0.0125, minSideMargins=0.125, defaultFontEncoding=TU, defaultFontSize=10, defaultFontSizeClo=null, defaultFontFamily=ptm, defaultFontSeries=m, defaultTeletypeFamily=lmtt, defaultTeletypeSeries=lc, tolerance=500, emergencyStretch=\\emergencystretch=0.1\\hsize, " +
+            "alleyThickHeight=0.0125, columnStrategy=BALANCE, minSideMargins=0.125, defaultFontEncoding=TU, defaultFontSize=10, defaultFontSizeClo=null, defaultFontFamily=ptm, defaultFontSeries=m, defaultTeletypeFamily=lmtt, defaultTeletypeSeries=lc, tolerance=500, emergencyStretch=\\emergencystretch=0.1\\hsize, " +
             "inputFilters=[.tex, .md, .txt, .text], out=out, " +
-            "jobName=newspaper, latex='pdflatex', latexCmdline=[--interaction=nonstopmode], " +
+            "jobName=newspaper, texinputs=:, latex='pdflatex', latexCmdline=[--interaction=nonstopmode], " +
             "extraPreambleLines=[\\usepackage{indentfirst}, \\usepackage[british]{babel}, \\usepackage[utf8]{inputenc}, \\usepackage{newtxmath,newtxtext}, \\usepackage{csquotes}, \\usepackage[TU]{fontenc}], " +
             "markdown=\\usepackage[smartEllipses,fancyLists]{markdown}, continuedOnPageText=\\makebox[\\textwidth]{\\hfill\\textit{\\scriptsize Continued on page \\otherpage\\dots\\hspace{-1em}}}, continuedFromPageText=\\makebox[\\textwidth]{\\textit{\\scriptsize\\hspace{-1em}\\dots continued from page \\otherpage}\\hfill}, " +
             "logFile=layout.log, stdOutLevel=ELEMENTS, stdErrLevel=SILENT, logFileLevel=ALGORITHM, " +
@@ -86,7 +86,7 @@ class SettingsTest {
                 "alleyWidth=6.6, alleyHeight=7.7, alleyThickWidth=8.8, alleyThickHeight=9.9, columnStrategy=FILLFIRST, minSideMargins=10.1, " +
                 "defaultFontEncoding=T1, defaultFontSize=14, defaultFontSizeClo=sizes, defaultFontFamily=cmr, defaultFontSeries=it, defaultTeletypeFamily=cmr, defaultTeletypeSeries=it, " +
                 "tolerance=1000, emergencyStretch={}, " +
-                "inputFilters=[.mDown, .mUp], out=path2, jobName=news, latex='/path/to/lualatex', " +
+                "inputFilters=[.mDown, .mUp], out=path2, jobName=news, texinputs=:, latex='/path/to/lualatex', " +
                 "latexCmdline=[--interaction=nonstopmode, --jobname=newspaper], extraPreambleLines=[\\usepackage{indentfirst}, \\usepackage{babel}, \\usepackage[utf8]{inputenc}, \\usepackage{newtxmath,newtxtext}, \\usepackage{csquotes}, \\newlength{mylen}, \\usepackage[T1]{fontenc}], " +
                 "markdown=\\usepackage[smartEllipsis=true]{markdown}, continuedOnPageText=(Ctd. page \\otherpage)\\hfill, continuedFromPageText=\\hfill(From page \\otherpage), " +
                 "logFile=log.txt, stdOutLevel=QUIET, stdErrLevel=DUMP_ALL, logFileLevel=ELEMENTS, " +

@@ -59,6 +59,11 @@ public class Settings implements PreambleLinesSupplier {
         return settings;
     }
 
+    public static enum ColumnStrategy {
+        BALANCE,
+        FILLFIRST
+    }
+
     private Path[] srcDirs;
 
     private String[] inputFilters;
@@ -77,6 +82,7 @@ public class Settings implements PreambleLinesSupplier {
 
     private int tolerance;
     private String emergencyStretch;
+    private ColumnStrategy columnStrategy;
 
     private Path out;
 
@@ -172,6 +178,8 @@ public class Settings implements PreambleLinesSupplier {
         this.alleyThickHeight = readLength(properties.getProperty("alleyThickHeight", "0.0125in"));
         this.minSideMargins = readLength(properties.getProperty("minSideMargins", "0.125in"));
 
+        this.columnStrategy = readEnum(properties, "columnStrategy", ColumnStrategy.class, ColumnStrategy.BALANCE);
+
         // https://tex.stackexchange.com/questions/470976/are-there-cases-where-fontenc-luatex-or-xetex-cause-problems
         this.defaultFontEncoding = properties.getProperty("defaultFontEncoding", "TU").toUpperCase(); // may need to set to T1 for pdflatex / systems not based on lua or xetex
         this.defaultFontFamily = properties.getProperty("defaultFontFamily", "ptm").toLowerCase();
@@ -195,7 +203,6 @@ public class Settings implements PreambleLinesSupplier {
         this.stdOutLevel = readEnum(properties, "stdOutLevel", DebugLevel.class, DebugLevel.ELEMENTS);
         this.stdErrLevel = readEnum(properties, "stdErrLevel", DebugLevel.class, DebugLevel.SILENT);
         this.logFileLevel = readEnum(properties, "logFileLevel", DebugLevel.class, DebugLevel.ALGORITHM);
-
 
         this.continuedOnPageText = properties.getProperty("continuedOnPageText", "\\makebox[\\textwidth]{\\hfill\\textit{\\scriptsize Continued on page \\otherpage\\dots\\hspace{-1em}}}");
         this.continuedFromPageText = properties.getProperty("continuedFromPageText", "\\makebox[\\textwidth]{\\textit{\\scriptsize\\hspace{-1em}\\dots continued from page \\otherpage}\\hfill}");
@@ -325,6 +332,10 @@ public class Settings implements PreambleLinesSupplier {
      */
     public String getEmergencyStretch() {
         return emergencyStretch;
+    }
+
+    public ColumnStrategy getColumnStrategy() {
+        return columnStrategy;
     }
 
 
@@ -460,6 +471,7 @@ public class Settings implements PreambleLinesSupplier {
                 ", alleyHeight=" + getAlleyHeight() +
                 ", alleyThickWidth=" + getAlleyThickWidth() +
                 ", alleyThickHeight=" + getAlleyThickHeight() +
+                ", columnStrategy=" + getColumnStrategy() +
                 ", minSideMargins=" + getMinSideMargins() +
                 ", defaultFontEncoding=" + getDefaultFontEncoding() +
                 ", defaultFontSize=" + getDefaultFontSize() +

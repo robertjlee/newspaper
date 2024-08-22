@@ -1,5 +1,7 @@
 package org.homelinux.rjlee.news;
 
+import org.homelinux.rjlee.news.settings.Settings;
+
 /**
  * Calculates the likely number of columns and pages, given the total column inches and page metrics
  *
@@ -17,16 +19,28 @@ class ColumnCalculator {
     }
 
     /**
+     * @param settings       settings supplier.
      * @param columnInches   total length (or equivalent page-area, for column-spanning objects)
-     * @param columnHeight   printable height of a column
+     * @param columnHeight   printable height of a column (overrides settings to ease testing).
      * @param maxColsPerPage maximum number of columns that can be accommodated on a page
      * @return calculation results
      */
-    static ColumnCalculator calculateColumnsPerPage(double columnInches, double columnHeight, long maxColsPerPage) {
+    static ColumnCalculator calculateColumnsPerPage(Settings settings, double columnInches, double columnHeight, long maxColsPerPage) {
+
         long totalColumns = Math.round((columnInches / columnHeight) + 0.5); // round up // C
-        long numPages = Math.round(((double) totalColumns / maxColsPerPage) + 0.5); // round up // P
-        int cpp = Math.round((float) totalColumns / numPages);
-        return new ColumnCalculator(totalColumns, numPages, cpp);
+        switch (settings.getColumnStrategy()) {
+            default:
+            case BALANCE: {
+                long numPages = Math.round(((double) totalColumns / maxColsPerPage) + 0.5); // round up // P
+                int cpp = Math.round((float) totalColumns / numPages);
+                return new ColumnCalculator(totalColumns, numPages, cpp);
+            }
+            case FILLFIRST: {
+                long numPages = (totalColumns / maxColsPerPage) +
+                        (totalColumns % maxColsPerPage == 0 ? 0 : 1);
+                return new ColumnCalculator(totalColumns, numPages, (int) maxColsPerPage);
+            }
+        }
     }
 
 
