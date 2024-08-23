@@ -73,11 +73,6 @@ public class Insert implements Part, Input, FixedSize {
         this.numColumnsOnPage = maxCols;
     }
 
-    @Override
-    public Long columnHint() {
-        return null;
-    }
-
     public void copyToImpl(PrintWriter out, Path outPath) throws IOException {
         copyToTex(headers.getInputMode(), settings, out, outPath);
     }

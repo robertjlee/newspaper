@@ -26,6 +26,11 @@ public class TitleInsert extends Insert {
     }
 
     @Override
+    public Long columnHint() {
+        return null;
+    }
+
+    @Override
     public void copyToTex(Headers.InputMode inputMode, Settings settings, PrintWriter out, Path outPath) throws IOException {
 
         double width = width();
