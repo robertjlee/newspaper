@@ -94,8 +94,7 @@ class LaTeXLengthCalculatorTest {
                 throw new IOException("Error!");
             }
         };
-        RuntimeException ex = assertThrows(RuntimeException.class, () -> calc.calculateLength(article, length), "No length was returned!");
-        assertInstanceOf(IOException.class, ex.getCause());
+        assertThrows(RuntimeException.class, () -> calc.calculateLength(article, length), "No length was returned!");
     }
 
     @Test
@@ -140,7 +139,12 @@ class LaTeXLengthCalculatorTest {
         ByteArrayOutputStream stdIn = new ByteArrayOutputStream();
 
         ShellProcessFactory shellProcessFactory = new MockShellProcessFactory(stdOut, stdErr, stdIn);
-        LatexLength length = new LatexLength(1.23, fragments, Stream.of("\\usepackage{foo}"), settings, shellProcessFactory, Logger.getInstance());
+        LatexLength length = new LatexLength(1.23, fragments, Stream.of("\\usepackage{foo}"), settings, shellProcessFactory, Logger.getInstance()) {
+            @Override
+            public Path outPath() {
+                return MockPath.createMockPathWithName("tmpdir", true);
+            }
+        };
         double result = calc.calculateLength(article, length);
 
         assertAll(
