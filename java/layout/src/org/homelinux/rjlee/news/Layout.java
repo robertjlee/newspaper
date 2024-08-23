@@ -37,7 +37,7 @@ public class Layout implements Runnable{
     }
 
     public void run() {
-        System.out.println("Newspaper layout algorithm by Robert Lee.");
+        System.out.println("Newspaper layout algorithm by Robert Lee. Version 1.0.1.");
 
         CmdLineOptions cmdLineOptions = new CmdLineOptions(System.out, cmdLine);
         Settings settings = Settings.build(cmdLineOptions, System::exit);
