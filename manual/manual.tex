@@ -773,6 +773,13 @@ Catalogue\footnote{\texttt{https://tug.org/FontCatalogue/allfonts.html}}.
   \TeX\ variable \texttt{\textbackslash jobname} or passing the
   \texttt{-jobname} argument through the \texttt{latexCmdLine}
   setting.}
+\setting{lengthsCache}{filename without suffix}{lengths.cache}{
+  The name of a file to create in the output directory, in which we
+  store the calculated length of each article fragment. This avoids
+  the need to repeatedly shell out to LaTeX to calculate lengths of
+  each fragment in case the programme is run again.\par
+  This cache file is not used by \LaTeX.
+ }
 \setting{logFile}{filename or path relative to output directory}{layout.log}{
   When creating the output newspaper, a log file is usually created to
   supply detailed information about processing. Depending on how you

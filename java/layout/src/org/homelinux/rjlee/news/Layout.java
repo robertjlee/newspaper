@@ -1,5 +1,6 @@
 package org.homelinux.rjlee.news;
 
+import org.homelinux.rjlee.news.latex.FileCache;
 import org.homelinux.rjlee.news.latex.LatexProcessFactory;
 import org.homelinux.rjlee.news.latex.NewspaperToLatexImpl;
 import org.homelinux.rjlee.news.logging.Logger;
@@ -41,6 +42,8 @@ public class Layout implements Runnable{
         CmdLineOptions cmdLineOptions = new CmdLineOptions(System.out, cmdLine);
         Settings settings = Settings.build(cmdLineOptions, System::exit);
         logger.configure(settings, System.out, System.err);
+
+        FileCache.getInstance().init(settings);
         NewspaperLayout layout = createEmptyLayout(settings, cmdLineOptions);
 
         layout.layOutNewspaper();
@@ -50,6 +53,8 @@ public class Layout implements Runnable{
         // Now output some kind of file readable by tex
         NewspaperToLatexImpl newspaperToLatex = new NewspaperToLatexImpl(settings, Logger.getInstance(), new LatexProcessFactory());
         newspaperToLatex.handleFinalOutput(layout);
+
+        FileCache.getInstance().save();
 
         // Flush any remaining logs
         logger.close();

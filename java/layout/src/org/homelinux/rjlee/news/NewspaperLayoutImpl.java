@@ -2,6 +2,7 @@ package org.homelinux.rjlee.news;
 
 import org.homelinux.rjlee.news.elements.*;
 import org.homelinux.rjlee.news.input.*;
+import org.homelinux.rjlee.news.latex.FileCachingLengthCalculator;
 import org.homelinux.rjlee.news.latex.LaTeXLengthCalculator;
 import org.homelinux.rjlee.news.latex.LengthCalculator;
 import org.homelinux.rjlee.news.logging.Logger;
@@ -10,6 +11,7 @@ import org.homelinux.rjlee.news.rendered.Col;
 import org.homelinux.rjlee.news.rendered.Page;
 import org.homelinux.rjlee.news.settings.Settings;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
@@ -95,7 +97,7 @@ public class NewspaperLayoutImpl implements NewspaperLayout {
     }
 
     private void readInputs(final Path[] dirs) {
-        LengthCalculator lengthCalculator = new LaTeXLengthCalculator();
+        LengthCalculator lengthCalculator = new FileCachingLengthCalculator(new LaTeXLengthCalculator());
         Logger logger = Logger.getInstance();
         InputFactory inf = new InputFactory(settings, lengthCalculator, logger);
         List<Input> inputs = Arrays.stream(dirs)
@@ -134,7 +136,7 @@ public class NewspaperLayoutImpl implements NewspaperLayout {
         if (isMarkdownUsed) allPreambleLines.add(settings.getMarkdown());
 
         // RL: possibly inefficient, but it tidies the debugging if we precalculate the lengths
-        this.inputs.forEach(Input::columnInches);
+        this.inputs.parallelStream().forEach(Input::columnInches);
         this.inputs.forEach(input -> input.logInput(logger));
 
         this.inputs.stream()

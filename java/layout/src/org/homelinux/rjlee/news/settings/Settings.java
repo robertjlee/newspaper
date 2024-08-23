@@ -59,7 +59,7 @@ public class Settings implements PreambleLinesSupplier {
         return settings;
     }
 
-    public static enum ColumnStrategy {
+    public enum ColumnStrategy {
         BALANCE,
         FILLFIRST
     }
@@ -91,6 +91,7 @@ public class Settings implements PreambleLinesSupplier {
     private String[] latexCmdLine;
 
     private String jobName;
+    private String lengthsCache;
 
     private List<String> extraPreambleLines;
     private String markdown;
@@ -198,6 +199,7 @@ public class Settings implements PreambleLinesSupplier {
         this.latex = properties.getProperty("latex", "pdflatex");
         this.latexCmdLine = properties.getProperty("latexCmdLine", "--interaction=nonstopmode").split("\\s+");
         this.jobName = properties.getProperty("jobName", "newspaper");
+        this.lengthsCache = properties.getProperty("lengthsCache", "lengths.cache");
         this.logFile = fileSystem.getPath(properties.getProperty("logFile", "layout.log"));
 
         this.stdOutLevel = readEnum(properties, "stdOutLevel", DebugLevel.class, DebugLevel.ELEMENTS);
@@ -347,6 +349,13 @@ public class Settings implements PreambleLinesSupplier {
         return jobName;
     }
 
+    /**
+     * @return name of the file to use for caching lengths between runs
+     */
+    public String getLengthsCache() {
+        return lengthsCache;
+    }
+
     public String getLatex() {
         return latex;
     }
@@ -421,7 +430,9 @@ public class Settings implements PreambleLinesSupplier {
         return flags.contains(Flag.defaultFontFamilyFromHeaders);
     }
 
-    public boolean isEnableLateXHooks() { return flags.contains(Flag.enableLaTeXHooks); }
+    public boolean isEnableLateXHooks() {
+        return flags.contains(Flag.enableLaTeXHooks);
+    }
 
     public DebugLevel getStdOutLevel() {
         return stdOutLevel;
@@ -485,6 +496,7 @@ public class Settings implements PreambleLinesSupplier {
                 ", inputFilters=" + Arrays.toString(getInputFilters()) +
                 ", out=" + getOut() +
                 ", jobName=" + getJobName() +
+                ", lengthsCache=" + getLengthsCache() +
                 ", texinputs=" + getTexInputs() +
                 ", latex='" + getLatex() + '\'' +
                 ", latexCmdline=" + Arrays.toString(getLatexCmdLine()) +

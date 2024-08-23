@@ -18,6 +18,9 @@ import java.util.stream.Stream;
  * @author Robert
  */
 public class LaTeXLengthCalculator implements LengthCalculator {
+    public LaTeXLengthCalculator() {
+    }
+
     @Override
     public double calculateLength(double widthForSizing, List<Double> fragments, Stream<String> preambleLines, Settings settings, ArticleText articleText) {
         LatexLength ll = new LatexLength(widthForSizing, fragments, preambleLines, settings, new LatexProcessFactory(), Logger.getInstance());
