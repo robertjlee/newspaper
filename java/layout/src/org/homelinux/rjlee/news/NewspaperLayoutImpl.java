@@ -290,6 +290,7 @@ public class NewspaperLayoutImpl implements NewspaperLayout {
                     Col cc = p.getColumns().get(col);
                     cc.set(cc.new ColFragment(i, cursor, end, null));
                 }
+                c += (int) i.cols();
             }
             cursor += b.getLength();
         }
