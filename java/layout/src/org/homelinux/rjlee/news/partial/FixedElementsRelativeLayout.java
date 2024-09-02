@@ -104,7 +104,7 @@ public class FixedElementsRelativeLayout {
         boolean wasEmpty = vSize == 0;
         Optional<Long> colHint = Optional.ofNullable(i.columnHint()).map(l -> l - 1);
         long col;
-        if (!colHint.isPresent() || colHint.get() < 0 || colHint.get() + i.cols() >= numCols) {
+        if (!colHint.isPresent() || colHint.get() < 0 || colHint.get() + i.cols() > numCols) {
             // stair-step columns
             if (this.col - i.cols() <= minCol) this.col = numCols + 1;
             this.col--;
