@@ -39,6 +39,7 @@ public class FixedElementsRelativeLayout {
             else inserts.add(0, i);
             startCol = newStartCol;
             endCol = newStartCol + inserts.stream().mapToLong(FixedSize::cols).sum() - 1;
+            length = Math.max(length, i.height());
             if (startCol < 0)
                 throw new IllegalStateException("Insert " + i + " attempt to set at col " + startCol + "; off the page!");
             if (endCol >= numCols)
