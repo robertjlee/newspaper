@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class SettingsTest {
 
-    public static final String DEFAULT_SETTINGS = "Settings{pageWidth=25.590551181102363, pageHeight=29.52755905511811, columnWidth=1.5, " +
+    public static final String DEFAULT_SETTINGS = "Settings{version=0.0.1, pageWidth=25.590551181102363, pageHeight=29.52755905511811, columnWidth=1.5, " +
             "columnHeight=26.5748031496063, alleyWidth=0.125, alleyHeight=0.125, alleyThickWidth=0.0125, " +
             "alleyThickHeight=0.0125, columnStrategy=BALANCE, minSideMargins=0.125, defaultFontEncoding=TU, defaultFontSize=10, defaultFontSizeClo=null, defaultFontFamily=ptm, defaultFontSeries=m, defaultTeletypeFamily=lmtt, defaultTeletypeSeries=lc, tolerance=500, emergencyStretch=\\emergencystretch=0.1\\hsize, " +
             "inputFilters=[.tex, .md, .txt, .text], out=out, " +
@@ -41,6 +41,7 @@ class SettingsTest {
     @Test
     void parse() {
         Properties p = new Properties();
+        p.put("version", "0.0.2");
         p.put("pageWidth", "1.1in");
         p.put("pageHeight", "2.2in");
         p.put("columnWidth", "3.3in");
@@ -83,7 +84,7 @@ class SettingsTest {
         p.put("enableLaTeXHooks", "truE");
 
         Settings s = new Settings(p);
-        assertEquals("Settings{pageWidth=1.1, pageHeight=2.2, columnWidth=3.3, columnHeight=5.5, " +
+        assertEquals("Settings{version=0.0.2, pageWidth=1.1, pageHeight=2.2, columnWidth=3.3, columnHeight=5.5, " +
                 "alleyWidth=6.6, alleyHeight=7.7, alleyThickWidth=8.8, alleyThickHeight=9.9, columnStrategy=FILLFIRST, minSideMargins=10.1, " +
                 "defaultFontEncoding=T1, defaultFontSize=14, defaultFontSizeClo=sizes, defaultFontFamily=cmr, defaultFontSeries=it, defaultTeletypeFamily=cmr, defaultTeletypeSeries=it, " +
                 "tolerance=1000, emergencyStretch={}, " +

@@ -7,10 +7,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 import java.util.function.IntConsumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -113,6 +110,8 @@ public class Settings implements PreambleLinesSupplier {
     private DebugLevel logFileLevel;
     private Path logFile;
 
+    private SemVer version;
+
     /**
      * Load properties files from the provided paths. Defaults are used if no file is found. If the same setting
      * appears in more than one file, the last-found setting overrides the first.
@@ -161,6 +160,8 @@ public class Settings implements PreambleLinesSupplier {
         }
 
         PageSizeCode defaultPageSize = readEnum(properties, "pageSize", PageSizeCode.class, PageSizeCode.BIG);
+
+        this.version = readVersion(properties.getProperty("version"), SemVer.valueOf("0.0.1"));
 
         this.pageWidth = readLength(properties.getProperty("pageWidth", defaultPageSize.getWidth()));
         this.pageHeight = readLength(properties.getProperty("pageHeight", defaultPageSize.getHeight()));
@@ -230,6 +231,14 @@ public class Settings implements PreambleLinesSupplier {
         extraPreambleLines.add("\\usepackage[" + defaultFontEncoding + "]{fontenc}");
 
         this.headerFont = new FontCommand(this, properties, "head", null, "\\rmdefault", "bc", "n", 18);
+    }
+
+    private SemVer readVersion(String version, SemVer defaultValue) {
+        try {
+            return Optional.ofNullable(version).filter(s -> !s.isEmpty()).map(SemVer::valueOf).orElse(defaultValue);
+        } catch (NullPointerException | NumberFormatException e) {
+            return defaultValue;
+        }
     }
 
     static <E extends Enum<E>> E readEnum(Properties properties, String propertyName, Class<E> clazz, E defaultValue) {
@@ -471,10 +480,15 @@ public class Settings implements PreambleLinesSupplier {
         return texInputs;
     }
 
+    public SemVer getVersion() {
+        return version;
+    }
+
     @Override
     public String toString() {
         return "Settings{" +
-                "pageWidth=" + getPageWidth() +
+                "version=" + getVersion() +
+                ", pageWidth=" + getPageWidth() +
                 ", pageHeight=" + getPageHeight() +
                 ", columnWidth=" + getColumnWidth() +
                 ", columnHeight=" + getColumnHeight() +
