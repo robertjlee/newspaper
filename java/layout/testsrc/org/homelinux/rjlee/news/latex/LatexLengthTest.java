@@ -67,6 +67,13 @@ class LatexLengthTest {
             "    \\typeout{No such split box #1[#2]; indexes start at 1}%\n" +
             "  \\fi%\n" +
             "}\n" +
+            "\\newcommand{\\stretchsplitbox}[3]{%\n" + // Sometimesusing \\vbox to X{\\unvboxY} leaves the box LONGER than X, even if \\copyY (dp+ht) is shorter than X. I don't yet understand why, except that unvbox unfreezes the glue while copy does not.
+            "  \\ifcsname sb@#2@#1\\endcsname%\n" +
+            "    \\vbox to #3{\\expandafter\\unvbox\\csname sb@#2@#1\\endcsname}%\n" +
+            "  \\else%\n" +
+            "    \\typeout{No such split box #1[#2]; indexes start at 1}%\n" +
+            "  \\fi%\n" +
+            "}\n" +
             "\\newcommand{\\htsplitbox}[2]{\\expandafter\\ht\\csname sb@#2@#1\\endcsname}\n" +
             "\\newcommand{\\dpsplitbox}[2]{\\expandafter\\dp\\csname sb@#2@#1\\endcsname}\n" +
             "\\newcommand{\\splitbox}[2]{%\n" +
@@ -265,6 +272,13 @@ class LatexLengthTest {
                             "\\newcommand{\\usesplitbox}[2]{%\n" +
                             "  \\ifcsname sb@#2@#1\\endcsname%\n" +
                             "    \\expandafter\\copy\\csname sb@#2@#1\\endcsname%\n" +
+                            "  \\else%\n" +
+                            "    \\typeout{No such split box #1[#2]; indexes start at 1}%\n" +
+                            "  \\fi%\n" +
+                            "}\n" +
+                            "\\newcommand{\\stretchsplitbox}[3]{%\n" +
+                            "  \\ifcsname sb@#2@#1\\endcsname%\n" +
+                            "    \\vbox to #3{\\expandafter\\unvbox\\csname sb@#2@#1\\endcsname}%\n" +
                             "  \\else%\n" +
                             "    \\typeout{No such split box #1[#2]; indexes start at 1}%\n" +
                             "  \\fi%\n" +

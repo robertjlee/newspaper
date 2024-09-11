@@ -49,6 +49,13 @@ class LatexInteractionTest {
                             "    \\typeout{No such split box #1[#2]; indexes start at 1}%\n" +
                             "  \\fi%\n" +
                             "}\n" +
+                            "\\newcommand{\\stretchsplitbox}[3]{%\n" +
+                            "  \\ifcsname sb@#2@#1\\endcsname%\n" +
+                            "    \\vbox to #3{\\expandafter\\unvbox\\csname sb@#2@#1\\endcsname}%\n" +
+                            "  \\else%\n" +
+                            "    \\typeout{No such split box #1[#2]; indexes start at 1}%\n" +
+                            "  \\fi%\n" +
+                            "}\n" +
                             "\\newcommand{\\htsplitbox}[2]{\\expandafter\\ht\\csname sb@#2@#1\\endcsname}\n" +
                             "\\newcommand{\\dpsplitbox}[2]{\\expandafter\\dp\\csname sb@#2@#1\\endcsname}\n" +
                             "\\newcommand{\\splitbox}[2]{%\n" +

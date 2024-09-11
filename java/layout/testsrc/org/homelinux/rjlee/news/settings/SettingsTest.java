@@ -20,7 +20,7 @@ class SettingsTest {
 
     public static final String DEFAULT_SETTINGS = "Settings{version=0.0.1, pageWidth=25.590551181102363, pageHeight=29.52755905511811, columnWidth=1.5, " +
             "columnHeight=26.5748031496063, alleyWidth=0.125, alleyHeight=0.125, alleyThickWidth=0.0125, " +
-            "alleyThickHeight=0.0125, columnStrategy=BALANCE, minSideMargins=0.125, defaultFontEncoding=TU, defaultFontSize=10, defaultFontSizeClo=null, defaultFontFamily=ptm, defaultFontSeries=m, defaultTeletypeFamily=lmtt, defaultTeletypeSeries=lc, tolerance=500, emergencyStretch=\\emergencystretch=0.1\\hsize, " +
+            "alleyThickHeight=0.0125, maxSquashVSpace=0.0, columnStrategy=BALANCE, minSideMargins=0.125, defaultFontEncoding=TU, defaultFontSize=10, defaultFontSizeClo=null, defaultFontFamily=ptm, defaultFontSeries=m, defaultTeletypeFamily=lmtt, defaultTeletypeSeries=lc, tolerance=500, emergencyStretch=\\emergencystretch=0.1\\hsize, " +
             "inputFilters=[.tex, .md, .txt, .text], out=out, " +
             "jobName=newspaper, lengthsCache=lengths.cache, texinputs=:, latex='pdflatex', latexCmdline=[--interaction=nonstopmode], " +
             "extraPreambleLines=[\\usepackage{indentfirst}, \\usepackage[british]{babel}, \\usepackage[utf8]{inputenc}, \\usepackage{newtxmath,newtxtext}, \\usepackage{csquotes}, \\usepackage[TU]{fontenc}], " +
@@ -82,10 +82,11 @@ class SettingsTest {
         p.put("continuedOnPageText", "(Ctd. page \\otherpage)\\hfill");
         p.put("continuedFromPageText", "\\hfill(From page \\otherpage)");
         p.put("enableLaTeXHooks", "truE");
+        p.put("maxSquashVSpace", "20in");
 
         Settings s = new Settings(p);
         assertEquals("Settings{version=0.0.2, pageWidth=1.1, pageHeight=2.2, columnWidth=3.3, columnHeight=5.5, " +
-                "alleyWidth=6.6, alleyHeight=7.7, alleyThickWidth=8.8, alleyThickHeight=9.9, columnStrategy=FILLFIRST, minSideMargins=10.1, " +
+                "alleyWidth=6.6, alleyHeight=7.7, alleyThickWidth=8.8, alleyThickHeight=9.9, maxSquashVSpace=20.0, columnStrategy=FILLFIRST, minSideMargins=10.1, " +
                 "defaultFontEncoding=T1, defaultFontSize=14, defaultFontSizeClo=sizes, defaultFontFamily=cmr, defaultFontSeries=it, defaultTeletypeFamily=cmr, defaultTeletypeSeries=it, " +
                 "tolerance=1000, emergencyStretch={}, " +
                 "inputFilters=[.mDown, .mUp], out=path2, jobName=news, lengthsCache=len.cache, texinputs=:, latex='/path/to/lualatex', " +
@@ -94,6 +95,16 @@ class SettingsTest {
                 "logFile=log.txt, stdOutLevel=QUIET, stdErrLevel=DUMP_ALL, logFileLevel=ELEMENTS, " +
                 "headerFont=\\null, " +
                 "allowTexFileOverwrite=true, inputWithoutCopy=true, defaultFontFamilyFromHeaders=true, enableLaTeXHooks=true}", s.toString());
+    }
+
+    @ParameterizedTest
+    @CsvSource(textBlock = "0.0.1, 0.0\n0.0.2, 0.4\n")
+    void maxSquishVSpaceDefault(SemVer version, double maxSquashVSpaceDefault) {
+        Properties p = new Properties();
+        p.put("version", version.toString());
+        Settings s = new Settings(p);
+        double actual = s.getMaxSquashVSpace();
+        assertEquals(maxSquashVSpaceDefault, actual, 0.00001);
     }
 
     @Test

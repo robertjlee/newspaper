@@ -139,10 +139,17 @@ public class Page {
                                 article.name(), a.getArticle().getOutCtr() + 1
                         );
                     }
-                    w.printf("\\usesplitbox{%s}{%d}%% target=%fin\n",
-                            article.name(),
-                            article.countOutput(),
-                            a.height());
+                    if (frag.isStretch()) {
+                        w.printf("\\stretchsplitbox{%s}{%d}{%fin}%%\n",
+                                article.name(),
+                                article.countOutput(),
+                                frag.height());
+                    } else {
+                        w.printf("\\usesplitbox{%s}{%d}%% target=%fin\n",
+                                article.name(),
+                                article.countOutput(),
+                                frag.height());
+                    }
                     Optional.ofNullable(a.getContinuedOnPage()).ifPresent(page ->
                             w.printf("\\continuedOn{%d}%n", page));
                 }
@@ -158,12 +165,12 @@ public class Page {
                 final Iterator<Col.ColFragment> ir = right.getFrags().iterator();
                 Col.ColFragment l = il.next();
                 Col.ColFragment r = ir.next();
-                for (double start = 0, end = Math.min(l.getEnd(), r.getEnd());
+                for (double start = 0, end = Math.min(l.end(), r.end());
                         ;
-                     l = (l.getEnd() == end && il.hasNext()) ? il.next() : l,
-                             r = (r.getEnd() == end && ir.hasNext()) ? ir.next() : r,
+                     l = (l.end() == end && il.hasNext()) ? il.next() : l,
+                             r = (r.end() == end && ir.hasNext()) ? ir.next() : r,
                              start = end,
-                             end = Math.min(l.getEnd(), r.getEnd())) {
+                             end = Math.min(l.end(), r.end())) {
                     double len = end - start;
                     if (l.getPart() == null || r.getPart() == null || l.getPart().skipHalley() || r.getPart().skipHalley())
                         w.printf("\\halleygap{%fin}%%\n", len);
@@ -226,7 +233,7 @@ public class Page {
             if (!spaces.hasNext()) continue; // this column is full!
             Col.ColFragment nextSpace = spaces.next();
             double space = nextSpace.height();
-            boolean useAlley = nextSpace.getStart() > 0;
+            boolean useAlley = nextSpace.start() > 0;
             if (useAlley) space -= settings.getAlleyHeight();
             if (space <= settings.getAlleyHeight()) continue;
             if (space > alen) {
@@ -240,7 +247,7 @@ public class Page {
             if (space > alen) {
                 // the article (remaining) fits into this space, so dump it & done:
                 aa = a.splitArticle(alen);
-                double top = nextSpace.getStart();
+                double top = nextSpace.start();
                 if (useAlley) {
                     Col.ColFragment newAlleyFrag = c.new ColFragment(new Valley(settings, 1), top);
                     c.set(newAlleyFrag);
@@ -254,14 +261,14 @@ public class Page {
             }
             // fit as much as we can in this space.
             alen -= space;
-            double top = nextSpace.getStart();
+            double top = nextSpace.start();
             if (useAlley) {
                 Col.ColFragment newAlleyFrag = c.new ColFragment(new Valley(settings, 1), top);
                 c.set(newAlleyFrag);
                 top += settings.getAlleyHeight();
             }
             aa = a.splitArticle(space);
-            Col.ColFragment newFrag = c.new ColFragment(aa, top, nextSpace.getEnd(), continuedFrom);
+            Col.ColFragment newFrag = c.new ColFragment(aa, top, nextSpace.end(), continuedFrom);
             if (continuedFrom != null) aa.reduce(getFlowFromLength());
             continuedFrom = null; // only show "continued from" ont the first placement
             c.set(newFrag);

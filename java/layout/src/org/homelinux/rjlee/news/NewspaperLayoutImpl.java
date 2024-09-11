@@ -11,7 +11,6 @@ import org.homelinux.rjlee.news.rendered.Col;
 import org.homelinux.rjlee.news.rendered.Page;
 import org.homelinux.rjlee.news.settings.Settings;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
@@ -243,14 +242,14 @@ public class NewspaperLayoutImpl implements NewspaperLayout {
             logger.algorithm().println("Setting fragment-able article " + a);
             double alen = a.columnInches();
 
-            double reqAlleyHeight = longestEmpty.getStart() == 0 ? 0 : settings.getAlleyHeight();
+            double reqAlleyHeight = longestEmpty.start() == 0 ? 0 : settings.getAlleyHeight();
             if (longestEmpty.height() >= alen + reqAlleyHeight) {
                 System.out.println("longestEmpty.height() = " + longestEmpty.height());
                 System.out.println("alen = " + alen);
                 System.out.println("settings.getAlleyHeight() = " + settings.getAlleyHeight());
                 // the entire article will fit here exactly, so put it here!
                 ArticleFragment aa = a.splitRemainingArticle(longestEmpty.height() - reqAlleyHeight);
-                double begin = longestEmpty.getStart();
+                double begin = longestEmpty.start();
                 if (begin > 0) {
                     Col.ColFragment newAlley = longestEmptyCol.new ColFragment(new Valley(settings, 1), begin);
                     longestEmptyCol.set(newAlley);

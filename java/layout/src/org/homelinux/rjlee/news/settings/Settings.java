@@ -76,6 +76,7 @@ public class Settings implements PreambleLinesSupplier {
     private double alleyHeight;
     private double alleyThickWidth;
     private double alleyThickHeight;
+    private double maxSquashVSpace;
 
     private int tolerance;
     private String emergencyStretch;
@@ -179,6 +180,8 @@ public class Settings implements PreambleLinesSupplier {
         this.alleyThickWidth = readLength(properties.getProperty("alleyThickWidth", "0.0125in"));
         this.alleyThickHeight = readLength(properties.getProperty("alleyThickHeight", "0.0125in"));
         this.minSideMargins = readLength(properties.getProperty("minSideMargins", "0.125in"));
+
+        this.maxSquashVSpace = readLength(properties.getProperty("maxSquashVSpace", version.compareTo(SemVer.valueOf("0.0.1")) > 0 ? "0.4in" : "0.0in"));
 
         this.columnStrategy = readEnum(properties, "columnStrategy", ColumnStrategy.class, ColumnStrategy.BALANCE);
 
@@ -323,6 +326,15 @@ public class Settings implements PreambleLinesSupplier {
      */
     public double getAlleyThickHeight() {
         return alleyThickHeight;
+    }
+
+    /**
+     * Maximum amount of vertical space to be considered "squashable". Vertical space will be removed if it is less than
+     * this limit, by extending the article above it, where possible. (Added in 0.0.2, so defaults to 0 if version is 0.0.1)
+     * @return maximum length of vertical whitespace that can be ignored.
+     */
+    public double getMaxSquashVSpace() {
+        return maxSquashVSpace;
     }
 
     /**
@@ -496,6 +508,7 @@ public class Settings implements PreambleLinesSupplier {
                 ", alleyHeight=" + getAlleyHeight() +
                 ", alleyThickWidth=" + getAlleyThickWidth() +
                 ", alleyThickHeight=" + getAlleyThickHeight() +
+                ", maxSquashVSpace=" + getMaxSquashVSpace() +
                 ", columnStrategy=" + getColumnStrategy() +
                 ", minSideMargins=" + getMinSideMargins() +
                 ", defaultFontEncoding=" + getDefaultFontEncoding() +

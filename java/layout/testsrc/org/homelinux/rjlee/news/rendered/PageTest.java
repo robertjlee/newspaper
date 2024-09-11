@@ -91,7 +91,7 @@ class PageTest {
         }
         Col.ColFragment frag2 = col1.new ColFragment(fixed, 0.125);
         col1.set(frag2);
-        Col.ColFragment frag3 = col1.new ColFragment(art.splitArticle(1.5), frag2.getEnd());
+        Col.ColFragment frag3 = col1.new ColFragment(art.splitArticle(1.5), frag2.end());
         col1.set(frag3);
 
         col2.set(col1.new ColFragment(art.splitRemainingArticle(settings.getColumnHeight()), 0));

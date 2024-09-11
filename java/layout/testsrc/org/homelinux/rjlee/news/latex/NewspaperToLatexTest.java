@@ -88,6 +88,13 @@ class NewspaperToLatexTest {
                 "    \\typeout{No such split box #1[#2]; indexes start at 1}%\n" +
                 "  \\fi%\n" +
                 "}\n" +
+                "\\newcommand{\\stretchsplitbox}[3]{%\n" +
+                "  \\ifcsname sb@#2@#1\\endcsname%\n" +
+                "    \\vbox to #3{\\expandafter\\unvbox\\csname sb@#2@#1\\endcsname}%\n" +
+                "  \\else%\n" +
+                "    \\typeout{No such split box #1[#2]; indexes start at 1}%\n" +
+                "  \\fi%\n" +
+                "}\n" +
                 "\\newcommand{\\htsplitbox}[2]{\\expandafter\\ht\\csname sb@#2@#1\\endcsname}\n" +
                 "\\newcommand{\\dpsplitbox}[2]{\\expandafter\\dp\\csname sb@#2@#1\\endcsname}\n" +
                 "\\newcommand{\\splitbox}[2]{%\n" +
@@ -281,7 +288,7 @@ class NewspaperToLatexTest {
         ArticleFragment articleFragment = a.splitArticle(settings.getColumnHeight() / 2);
         Col.ColFragment firstFragment = col.new ColFragment(articleFragment, 0, settings.getColumnHeight() / 2, null);
         col.set(firstFragment);
-        col.set(col.new ColFragment(a.splitRemainingArticle(settings.getColumnHeight() - firstFragment.getEnd()), firstFragment.getEnd()));
+        col.set(col.new ColFragment(a.splitRemainingArticle(settings.getColumnHeight() - firstFragment.end()), firstFragment.end()));
     }
 
     @Test

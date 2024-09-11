@@ -27,6 +27,7 @@ public class Col {
         private double start;
         private double end;
         private Part part;
+        private boolean stretch;
 
         /**
          * Construct an empty fragment for a whole column
@@ -83,24 +84,15 @@ public class Col {
         }
 
 
-
         public String toString() {
             return (part == null ? "Fragment empty" : "Fragment for part " + part) +
-                    "@[" + getStart() + "-" + getEnd() + "]";
+                    "@[" + start() + "-" + end() + "]";
         }
 
         public double height() {
             return end() - start();
         }
 
-        public double getStart() {
-            return start;
-        }
-
-
-        public double getEnd() {
-            return end;
-        }
 
         public Part getPart() {
             return part;
@@ -110,6 +102,22 @@ public class Col {
             return continuedFrom;
         }
 
+        /**
+         * change the stretch of this column fragment
+         * @param end new end
+         */
+        public void adjustEnd(double end) {
+            this.stretch = true;
+            this.end = end;
+        }
+
+        /**
+         *
+         * @return true if this fragment should be adjusted from its natural size; false to maintain the standard sizing.
+         */
+        public boolean isStretch() {
+            return stretch;
+        }
     }
 
     private final Settings settings;
@@ -133,11 +141,17 @@ public class Col {
             if (cf.end() < to || cf.start() > fro) continue;
             frags.remove(cf);
             if (cf.end() > to) {
-                frags.add(i, new ColFragment(to, cf.end()));
+                // track the empty space
+                if (cf.end() - to < settings.getMaxSquashVSpace()) {
+                    ff.adjustEnd(cf.end());
+                } else {
+                    frags.add(i, new ColFragment(to, cf.end()));
+                }
             }
             frags.add(i, ff);
             //System.out.println(String.format("Placed fixed-place element %s on col %s",ff, this));
             if (cf.start() < fro) {
+                // track the empty space
                 frags.add(i, new ColFragment(cf.start(), fro));
             }
             // merge alleys if we can

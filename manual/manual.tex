@@ -548,6 +548,16 @@ Catalogue\footnote{\texttt{https://tug.org/FontCatalogue/allfonts.html}}.
   page than will fit in order to reduce the chance of orphan columns
   on the last page.\par This is the guaranteed page border, totalled
   over left and right margins.}
+\setting{maxSquashVSpace}{length}{0.4in, or 0 for version$\le$0.0.1}{During
+  layout, if the amount of space after an article fragment is greater
+  than this amount, the fragment will be stretched by this amount, to
+  avoid the blank space.\par
+  This ensures that the bottom of columns line up, even when the
+  natural height of each article fragment differs for any reason.\par
+  You should include \textit{rubber space} in the line or paragraph
+  skips if this setting is non-zero, to avoid an \textit{underfull
+    \textbackslash vbox} warning.
+}
 \setting{defaultFontSize}{\TeX\ points, typically 10, 11 or 12}{10}{This 
   setting controls the point size of the default document, in
   points.\par
