@@ -130,6 +130,11 @@ public class Col {
         frags.add(new ColFragment());
     }
 
+    /**
+     * Set a columnfragment onto this column, adjusting free space.
+     * @param ff column fragment to set.
+     * @throws IllegalStateException if {@code ff} extends beyond the space of this column, or overlaps an existing fragment.
+     */
     public void set(ColFragment ff) {
         //System.out.println("Placing fixed fragment " + ff);
         double fro = ff.start;

@@ -17,7 +17,7 @@ import static java.util.Collections.emptyList;
 
 public class Page {
     private final Settings settings;
-    private long simplePageNo;
+    private final long simplePageNo;
     private final List<Col> columns = new ArrayList<>();
 
     private double flowFromLength = -1;
@@ -37,6 +37,7 @@ public class Page {
             columns.add(next);
             last = next;
         }
+        //noinspection resource
         Logger.getInstance().elements().println("Page " + simplePageNo + " with " + numColumns + " columns");
     }
 
@@ -265,6 +266,14 @@ public class Page {
             if (useAlley) {
                 Col.ColFragment newAlleyFrag = c.new ColFragment(new Valley(settings, 1), top);
                 c.set(newAlleyFrag);
+                // it may be that, having set the alley, we've now filled the column. In this case, just skip to the next column.
+                if (!c.empty().findFirst().isPresent()) {
+                    if (settings.getAlleyThickHeight() == 0) {
+                        // if there's no alley line, dumping an alley at the end of a column looks weird.
+                        logger.algorithm().printf("WARN: page %d (simple count) column %d is a short column.%n", this.simplePageNo, getColumns().indexOf(c) + 1);
+                    }
+                    continue; // next column
+                }
                 top += settings.getAlleyHeight();
             }
             aa = a.splitArticle(space);
