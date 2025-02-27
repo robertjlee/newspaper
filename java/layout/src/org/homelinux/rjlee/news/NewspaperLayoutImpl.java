@@ -35,7 +35,7 @@ public class NewspaperLayoutImpl implements NewspaperLayout {
     /**
      * The settings as determined by settings.properties files.
      */
-    private Settings settings;
+    private final Settings settings;
     /**
      * Holds any partial article held over from the last page
      */
@@ -184,25 +184,31 @@ public class NewspaperLayoutImpl implements NewspaperLayout {
             else is.add((FixedSize) next);
         }
 
-        // now lay out the fixed inserts
-        FixedElementsRelativeLayout v = new FixedElementsRelativeLayout(p.numCols(), 0, p, settings);
-        while (!is.isEmpty()) {
-            FixedSize fs = is.get(0);
-            logger.algorithm().println("Fitting fixed-size " + fs);
-            if (v.fit(fs, allowPageEnlargementByCols)) is.remove(0);
-            else {
-                if (fs.height() > settings.getColumnHeight()) {
-                    throw new IllegalArgumentException(String.format("Input " + fs.path().getFileName() + " would be longer than available page height. Increase page size, change to type article, or reduce size of insert."));
+        if (!p.isEmpty()) {
+            // issue 19: only do FixedElementsRelativeLayout if the page is empty. FERL doesn't support partial pages.
+            Collections.reverse(is);
+            is.forEach(unprocessed -> inputs.add(0, (Input) unprocessed));
+        } else {
+            // now lay out the fixed inserts
+            FixedElementsRelativeLayout v = new FixedElementsRelativeLayout(p.numCols(), 0, p, settings);
+            while (!is.isEmpty()) {
+                FixedSize fs = is.get(0);
+                logger.algorithm().println("Fitting fixed-size " + fs);
+                if (v.fit(fs, allowPageEnlargementByCols)) is.remove(0);
+                else {
+                    if (fs.height() > settings.getColumnHeight()) {
+                        throw new IllegalArgumentException(String.format("Input " + fs.path().getFileName() + " would be longer than available page height. Increase page size, change to type article, or reduce size of insert."));
+                    }
+                    logger.algorithm().printf("Failed to fit insert %s; deferring %d fixed articles to next page\n", fs, is.size());
+                    Collections.reverse(is);
+                    is.forEach(unprocessed -> inputs.add(0, (Input) unprocessed));
+                    break;
                 }
-                logger.algorithm().printf("Failed to fit insert %s; deferring %d fixed articles to next page\n", fs, is.size());
-                Collections.reverse(is);
-                is.forEach(unprocessed -> inputs.add(0, (Input) unprocessed));
-                break;
             }
+            logger.algorithm().println("Placing " + v);
+            place(p, v);
+            logger.algorithm().println(" - placing fixed elements done");
         }
-        logger.algorithm().println("Placing " + v);
-        place(p, v);
-        logger.algorithm().println(" - placing fixed elements done");
         // basic layout: worst-fit without splitting, falling back to inserting from the first column
         // if we have an overflow, set it first, by first-fit.
         // that way, overflows always start in column 1.
