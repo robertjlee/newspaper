@@ -269,6 +269,11 @@ public class NewspaperLayoutImpl implements NewspaperLayout {
                 // (There are more clever things we can do later, such as arranging columns side-by-side)
                 overflow = p.setArticleByFirstFit(a, alen, null, allowPageEnlargementByCols);
             }
+            if (overflow != null) {
+                // the page is filled. There may be more spaces, but we can't fit an article in them.
+                ip.forEach(unprocessed -> inputs.add(0, unprocessed));
+                ip.clear();
+            }
         }
 
         logger.algorithm().println("Laying out page [" + p.getSimplePageNo() + "] done; overflow=" + overflow);
