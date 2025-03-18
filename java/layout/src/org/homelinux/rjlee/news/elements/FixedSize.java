@@ -2,6 +2,7 @@ package org.homelinux.rjlee.news.elements;
 
 import org.homelinux.rjlee.news.input.Headers;
 import org.homelinux.rjlee.news.parsing.LengthParser;
+import org.homelinux.rjlee.news.settings.Settings;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -20,6 +21,7 @@ public interface FixedSize extends Part {
     }
 
     default void copyTo(PrintWriter out, Path outPath) throws IOException {
+        if (getSettings().isEnableLateXHooks()) getHeaders().ifHeader("BeforeBox", out::println);
         double boxWidth = frameLineWidth();
         if (boxWidth > 0) {
             double boxSep = frameLineSep();
@@ -29,7 +31,10 @@ public interface FixedSize extends Part {
         if (boxWidth > 0) {
             out.println("}}");
         }
+        if (getSettings().isEnableLateXHooks()) getHeaders().ifHeader("AfterBox", out::println);
     }
+
+    Settings getSettings();
 
     default double frameLineSep() {
         Headers headers = getHeaders();

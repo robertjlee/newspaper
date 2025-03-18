@@ -86,4 +86,8 @@ public class Insert implements Part, Input, FixedSize {
         return headers.preambleLines();
     }
 
+    @Override
+    public Settings getSettings() {
+        return settings;
+    }
 }
