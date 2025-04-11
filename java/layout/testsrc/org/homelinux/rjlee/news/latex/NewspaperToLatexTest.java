@@ -7,6 +7,7 @@ import org.homelinux.rjlee.news.input.Headers;
 import org.homelinux.rjlee.news.logging.CapturingLogger;
 import org.homelinux.rjlee.news.mockpath.MockPath;
 import org.homelinux.rjlee.news.rendered.Col;
+import org.homelinux.rjlee.news.rendered.ColumnarPage;
 import org.homelinux.rjlee.news.rendered.Page;
 import org.homelinux.rjlee.news.settings.Settings;
 import org.junit.jupiter.api.Assertions;
@@ -280,7 +281,7 @@ class NewspaperToLatexTest {
     }
 
     private static void addPage(Settings settings, LaidOut laidOut) {
-        Page p1 = new Page(0, 1, settings);
+        ColumnarPage p1 = new ColumnarPage(0, 1, settings);
         laidOut.getPages().add(p1);
         Col col = p1.getColumns().get(0);
         MockPath article = MockPath.createMockPathWithNameAndContent("art.tex", "%art");

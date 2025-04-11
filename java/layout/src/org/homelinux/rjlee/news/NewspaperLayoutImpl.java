@@ -8,6 +8,7 @@ import org.homelinux.rjlee.news.latex.LengthCalculator;
 import org.homelinux.rjlee.news.logging.Logger;
 import org.homelinux.rjlee.news.partial.FixedElementsRelativeLayout;
 import org.homelinux.rjlee.news.rendered.Col;
+import org.homelinux.rjlee.news.rendered.ColumnarPage;
 import org.homelinux.rjlee.news.rendered.Page;
 import org.homelinux.rjlee.news.settings.Settings;
 
@@ -88,10 +89,10 @@ public class NewspaperLayoutImpl implements NewspaperLayout {
 
         int pageNo;
         for (pageNo = 1; pageNo < columnPageResult.getNumPages(); pageNo++) {
-            Page p = new Page(pageNo, colsPerPage, settings);
+            Page p = new ColumnarPage(pageNo, colsPerPage, settings);
             pages.add(p);
         }
-        Page lastPage = new Page(pageNo, columnPageResult.getTotalColumns() - ((long) colsPerPage * pages.size()), settings);
+        Page lastPage = new ColumnarPage(pageNo, columnPageResult.getTotalColumns() - ((long) colsPerPage * pages.size()), settings);
         pages.add(lastPage);
     }
 
@@ -154,7 +155,7 @@ public class NewspaperLayoutImpl implements NewspaperLayout {
      * @param allowPageEnlargementByCols on the last page, there may be fewer columns, but there may be overflow.
      *                                   This parameter says how many columns we can add to the page to accommodate items larger than expected.
      */
-    void layoutPage(Page p, long allowPageEnlargementByCols) {
+    void layoutPage(ColumnarPage p, long allowPageEnlargementByCols) {
         logger.algorithm().println("Laying out page [" + p.getSimplePageNo() + "]; overflow=" + overflow);
         logger.algorithm().println("Inputs remaining: #" + inputs.size());
         final List<Article> ip = new ArrayList<>();
@@ -168,7 +169,8 @@ public class NewspaperLayoutImpl implements NewspaperLayout {
             Input next = inputs.remove(pos);
             Headers headers = next.getHeaders();
             boolean[] skipInput = {false};
-            headers.ifHeader("Page", str -> {
+            if (next instanceof Truck) skipInput[0] = true;
+            else headers.ifHeader("Page", str -> {
                 long minPage = headers.getIntegerHeader("Page", Integer.MIN_VALUE, Integer.MAX_VALUE);
                 if (minPage > 0 && minPage > p.getSimplePageNo()) skipInput[0] = true;
                 if (minPage < 0 && minPage > (p.getSimplePageNo() - pages.size() - 1)) skipInput[0] = true;
@@ -283,7 +285,7 @@ public class NewspaperLayoutImpl implements NewspaperLayout {
     /**
      * Place inserts onto the page
      */
-    private void place(Page p, FixedElementsRelativeLayout v) {
+    private void place(ColumnarPage p, FixedElementsRelativeLayout v) {
         double cursor = 0;
         PrintWriter algorithm = Logger.getInstance().algorithm();
         algorithm.println("Moving fixed elements onto page " + p.getSimplePageNo());
@@ -326,13 +328,22 @@ public class NewspaperLayoutImpl implements NewspaperLayout {
      * A final sanity check to make sure that all inputs actually appear in the output.
      */
     public void validate() {
-        Set<Path> pathsRendered = pages.stream()
-                .flatMap(p -> p.getColumns().stream())
-                .flatMap(c -> c.getFrags().stream())
-                .map(Col.ColFragment::getPart)
-                .filter(Objects::nonNull)
-                .map(Part::path)
-                .collect(Collectors.toSet());
+        Set<Path> pathsRendered =
+                Stream.concat(pages.stream()
+                                        .filter(p -> p instanceof ColumnarPage)
+                                        .map(ColumnarPage.class::cast)
+                                        .flatMap(p -> p.getColumns().stream())
+                                        .flatMap(c -> c.getFrags().stream())
+                                        .map(Col.ColFragment::getPart)
+                                        .filter(Objects::nonNull)
+                                        .map(Part::path),
+                                pages.stream()
+                                        .filter(p -> p instanceof Truck)
+                                        .map(Truck.class::cast)
+                                        .map(Truck::path)
+                                        .filter(Objects::nonNull)
+                        )
+                        .collect(Collectors.toSet());
 
         String missing = allInputs.stream()
                 .filter(i -> !pathsRendered.contains(i.path()))
@@ -365,19 +376,28 @@ public class NewspaperLayoutImpl implements NewspaperLayout {
     @Override
     public void layOutNewspaper() {
         while (hasData()) {
-            Iterator<Page> ip = getPages().iterator();
             Page p = null;
-            while (ip.hasNext()) {
+            for (int simplePageNo = 0; simplePageNo < getPages().size();) {
                 // NB: the last page may well only contain overflow,
                 // but we still need to set it out.
-                p = ip.next();
-                long numExtraColsAllowed = settings.getMaxColsPerPage() - p.getColumns().size();
-                layoutPage(p, numExtraColsAllowed);
+                p = getPages().get(simplePageNo);
+                p.setSimplePageNo(++simplePageNo); // track the page numbers with extra page inserts
+                if (p instanceof ColumnarPage) {
+                    ColumnarPage cp = ((ColumnarPage) p);
+                    long numExtraColsAllowed = settings.getMaxColsPerPage() - cp.getColumns().size();
+                    layoutPage(cp, numExtraColsAllowed);
+                }
+                // have we accumulated any full-trucks to output?
+                while (!inputs.isEmpty() && inputs.get(0) instanceof Truck) {
+                    Truck truck = (Truck) inputs.remove(0);
+                    getPages().add(simplePageNo++, truck);
+                    truck.setSimplePageNo(simplePageNo);
+                }
             }
             // if we still have data, e.g. by using "Page" to create blank space, then we need to add extra pages:
             if (hasData()) {
                 Objects.requireNonNull(p);
-                getPages().add(new Page(p.getSimplePageNo() + 1, colsPerPage, settings));
+                getPages().add(new ColumnarPage(p.getSimplePageNo() + 1, colsPerPage, settings));
             }
         }
         trimEmptyPages();

@@ -6,7 +6,7 @@ import org.homelinux.rjlee.news.latex.MockLengthCalculator;
 import org.homelinux.rjlee.news.logging.CapturingLogger;
 import org.homelinux.rjlee.news.logging.Logger;
 import org.homelinux.rjlee.news.mockpath.MockPath;
-import org.homelinux.rjlee.news.rendered.Page;
+import org.homelinux.rjlee.news.rendered.ColumnarPage;
 import org.homelinux.rjlee.news.settings.Settings;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -54,7 +54,7 @@ class NewspaperLayoutImplTest {
 
     @Test
     void layoutPage() {
-        Page p = new Page(1, 5, settings);
+        ColumnarPage p = new ColumnarPage(1, 5, settings);
         newLayout.layoutPage(p, 0);
         assertEquals("PAGE 1\n" +
                 " Column1:[Fragment empty@[0.0-26.5748031496063]]\n" +
@@ -121,7 +121,7 @@ class NewspaperLayoutImplTest {
         Headers headers = new Headers(path, new Properties(), settings);
         Article article = new ArticleImpl(headers, settings, new MockLengthCalculator());
         newLayout.setOverflow(new Overflow(article, 3.1, 1));
-        newLayout.layoutPage(newLayout.getPages().get(0), 0);
+        newLayout.layoutPage((ColumnarPage) newLayout.getPages().get(0), 0);
         assertAll(
                 () -> assertEquals("[PAGE 1\n" +
                         " Column1:[Fragment for part [art.tex:0 => 3.059723 in]@[0.0-3.1415], Fragment empty@[3.1415-26.5748031496063]]\n" +
@@ -136,7 +136,7 @@ class NewspaperLayoutImplTest {
         Headers headers = new Headers(path, new Properties(), settings);
         Article article = new ArticleImpl(headers, settings, new MockLengthCalculator());
         newLayout.setOverflow(new Overflow(article, settings.getColumnHeight() + 1, 1));
-        newLayout.layoutPage(newLayout.getPages().get(0), 1);
+        newLayout.layoutPage((ColumnarPage) newLayout.getPages().get(0), 1);
         assertAll(
                 () -> assertEquals("[PAGE 1\n" +
                         " Column1:[Fragment for part [art.tex:0 => 26.493026 in]@[0.0-26.5748031496063]]\n" +
@@ -152,7 +152,7 @@ class NewspaperLayoutImplTest {
         Headers headers = new Headers(path, new Properties(), settings);
         Article article = new ArticleImpl(headers, settings, new MockLengthCalculator());
         newLayout.setOverflow(new Overflow(article, 2 * settings.getColumnHeight() + 1, 1));
-        newLayout.layoutPage(newLayout.getPages().get(0), 2);
+        newLayout.layoutPage((ColumnarPage) newLayout.getPages().get(0), 2);
         assertAll(
                 () -> assertEquals("[PAGE 1\n" +
                         " Column1:[Fragment for part [art.tex:0 => 26.493026 in]@[0.0-26.5748031496063]]\n" +
@@ -189,7 +189,7 @@ class NewspaperLayoutImplTest {
         List<Input> list = singletonList(article1);
         newLayout.processInputs(list, logger, false);
 
-        Page p = newLayout.getPages().get(0);
+        ColumnarPage p = (ColumnarPage) newLayout.getPages().get(0);
         IntStream.range(0, 15).forEach(i -> p.addExtraColumn());
         newLayout.layOutNewspaper();
 
@@ -230,9 +230,9 @@ class NewspaperLayoutImplTest {
         lengthCalculator.setLength(columnInches);
         Article article = new ArticleImpl(headers, settings, lengthCalculator);
         newLayout.setOverflow(new Overflow(article, columnInches, 1));
-        newLayout.getPages().add(new Page(2, 9, settings));
-        newLayout.layoutPage(newLayout.getPages().get(0), 0);
-        newLayout.layoutPage(newLayout.getPages().get(1), 0);
+        newLayout.getPages().add(new ColumnarPage(2, 9, settings));
+        newLayout.layoutPage((ColumnarPage) newLayout.getPages().get(0), 0);
+        newLayout.layoutPage((ColumnarPage) newLayout.getPages().get(1), 0);
         assertAll(() -> assertEquals("[PAGE 1\n" +
                         " Column1:[Fragment for part [art.tex:0 => 26.411249 in]@[0.0-26.5748031496063]]\n" +
                         ", PAGE 2\n" +
@@ -270,7 +270,7 @@ class NewspaperLayoutImplTest {
         newLayout.processInputs(singletonList(article1), logger, false);
 
         // set article1
-        Page page = newLayout.getPages().get(0);
+        ColumnarPage page = (ColumnarPage) newLayout.getPages().get(0);
         newLayout.layoutPage(page, 0);
 
         // now test article2 ends up in the same column
@@ -295,7 +295,7 @@ class NewspaperLayoutImplTest {
         newLayout.processInputs(singletonList(article2), logger, false);
 
         newLayout.setOverflow(new Overflow(article1, 3.1, 1));
-        newLayout.layoutPage(newLayout.getPages().get(0), 0);
+        newLayout.layoutPage((ColumnarPage) newLayout.getPages().get(0), 0);
         assertEquals("[PAGE 1\n" +
                 " Column1:[Fragment for part [art1.tex:0 => 3.059723 in]@[0.0-3.1415], Fragment for part V-mode alley{cols=1}@[3.1415-3.2665], Fragment for part [art2.tex:0 => 3.141500 in]@[3.2665-6.408], Fragment empty@[6.408-26.5748031496063]]\n" +
                 "]", newLayout.toString());
@@ -330,9 +330,9 @@ class NewspaperLayoutImplTest {
         List<Input> list = asList(article1, article2, article3);
         newLayout.processInputs(list, logger, false);
 
-        Page p = newLayout.getPages().get(0);
+        ColumnarPage p = (ColumnarPage) newLayout.getPages().get(0);
         IntStream.range(0, 15).forEach(i -> p.addExtraColumn());
-        newLayout.getPages().add(new Page(1, 1, settings));
+        newLayout.getPages().add(new ColumnarPage(1, 1, settings));
         newLayout.layOutNewspaper();
 
         assertEquals("[PAGE 1\n" +
@@ -375,9 +375,9 @@ class NewspaperLayoutImplTest {
         System.out.println("list = " + list);
         newLayout.processInputs(list, logger, false);
 
-        Page p = newLayout.getPages().get(0);
+        ColumnarPage p = (ColumnarPage) newLayout.getPages().get(0);
         IntStream.range(0, 16).forEach(i -> p.addExtraColumn());
-        newLayout.getPages().add(new Page(2, 1, settings));
+        newLayout.getPages().add(new ColumnarPage(2, 1, settings));
         newLayout.layOutNewspaper();
         assertEquals("[PAGE 1\n" +
                 " Column1:[Fragment for part [Insert:art1.tex([17]27.500000x26.323553)]@[0.0-26.3235531496063], Fragment for part V-mode alley{cols=17}@[26.3235531496063-26.4485531496063], Fragment for part [art2.tex:0 => 0.126250 in]@[26.4485531496063-26.5748031496063]]\n" +
@@ -464,8 +464,8 @@ class NewspaperLayoutImplTest {
 
     @Test
     void layoutPage_keepForLastPage() {
-        newLayout.getPages().add(new Page(2, 1, settings));
-        newLayout.getPages().add(new Page(3, 1, settings));
+        newLayout.getPages().add(new ColumnarPage(2, 1, settings));
+        newLayout.getPages().add(new ColumnarPage(3, 1, settings));
 
         // create an article
         Path path1 = MockPath.createMockPathWithNameAndContent("art1.tex", "\\lipsum");
@@ -512,7 +512,7 @@ class NewspaperLayoutImplTest {
      */
     @Test
     void insertLongerThanPage() {
-        for (int i=0; i < 15; i++) newLayout.getPages().get(0).addExtraColumn();
+        for (int i=0; i < 15; i++) ((ColumnarPage)newLayout.getPages().get(0)).addExtraColumn();
         // create an article
         Path path1 = MockPath.createMockPathWithNameAndContent("art1.tex", "");
         Properties headProps = new Properties();

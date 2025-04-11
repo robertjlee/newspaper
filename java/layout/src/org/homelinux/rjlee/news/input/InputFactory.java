@@ -45,6 +45,8 @@ public class InputFactory {
                     return new HeadSpanArticle(headers, this.settings, lengthCalculator);
                 case "title":
                     return new TitleInsert(headers, this.settings);
+                case "truck":
+                    return new Truck(headers, this.settings);
                 case "article":
                     return new ArticleImpl(headers, this.settings, lengthCalculator);
                 default:

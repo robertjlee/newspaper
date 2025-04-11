@@ -4,8 +4,10 @@ import org.homelinux.rjlee.news.LaidOut;
 import org.homelinux.rjlee.news.elements.ArticleFragment;
 import org.homelinux.rjlee.news.elements.ArticleFragmentImpl;
 import org.homelinux.rjlee.news.input.Article;
+import org.homelinux.rjlee.news.input.Truck;
 import org.homelinux.rjlee.news.logging.Logger;
 import org.homelinux.rjlee.news.rendered.Col;
+import org.homelinux.rjlee.news.rendered.ColumnarPage;
 import org.homelinux.rjlee.news.rendered.Page;
 import org.homelinux.rjlee.news.settings.Settings;
 
@@ -120,6 +122,8 @@ public class NewspaperToLatexImpl extends LatexInteraction implements NewspaperT
             List<Page> allPages = laidOut.getPages();
             // step 1: create boxes for each article
             Stream<Article> allArticles = allPages.stream()
+                    .filter(p -> p instanceof ColumnarPage)
+                    .map(ColumnarPage.class::cast)
                     .flatMap(pa -> pa.getColumns().stream())
                     .flatMap(co -> co.getFrags().stream())
                     .map(Col.ColFragment::getPart)
@@ -142,12 +146,18 @@ public class NewspaperToLatexImpl extends LatexInteraction implements NewspaperT
             // step 2: output each page
             for (int i = 0; i < allPages.size(); ) {
                 out.printf("%% page %d\n", i + 1);
-                out.println("\\hbox{}\\vfil");
-                allPages.get(i).write(out, getSettings().getOut());
-                if (++i < allPages.size())
+                Page page = allPages.get(i);
+                if (!(page instanceof Truck))
+                    out.println("\\hbox{}\\vfil");
+                page.write(out, getSettings().getOut());
+                if (++i < allPages.size() && !(allPages.get(i) instanceof Truck)) // Trucks use afterpage to avoid blank space, so need the pagebreak after them, not before, or they delay.
                     //		    w.println("\\eject");
                     //w.println("\\\\\\hbox{}\\vfill");
                     out.println("\\pagebreak");
+            }
+            if (allPages.get(allPages.size()-1) instanceof Truck) {
+                // output any queued trucks at the end of the document
+                out.println("\\pagebreak");
             }
             //	    if (overflow != null) {
             //		w.println("Overflow!");

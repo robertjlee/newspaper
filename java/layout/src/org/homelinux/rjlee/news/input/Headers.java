@@ -26,25 +26,6 @@ import java.util.stream.Stream;
 public class Headers implements PreambleLinesSupplier {
 
 
-    public enum InputType {
-        /**
-         * An input-file that should be skipped
-         */
-        SKIP,
-        /**
-         * A paste-up article
-         */
-        ARTICLE,
-        /**
-         * A head-spanning article
-         */
-        HEAD_SPAN,
-        /**
-         * A fixed-size insert
-         */
-        INSERT;
-    }
-
     public enum InputMode {
         /**
          * Use an {@code \input{}} to include the file, or copy it directly
@@ -100,8 +81,8 @@ public class Headers implements PreambleLinesSupplier {
                 .map(headers::getProperty);
     }
 
-    public String getHeader(String s, String s1) {
-        return headers.getProperty(s, s1);
+    public String getHeader(String name, String defaultValue) {
+        return headers.getProperty(name, defaultValue);
     }
 
     /**
@@ -121,23 +102,6 @@ public class Headers implements PreambleLinesSupplier {
                 .anyMatch(value -> !value.isEmpty());
     }
 
-
-    public InputType getInputType() {
-        return Optional.ofNullable(headers.getProperty("Type"))
-                .map(String::toUpperCase)
-                .map(str -> {
-                    switch (str) {
-                        case "ARTICLE":
-                            return InputType.ARTICLE;
-                        case "HEADSPAN":
-                            return InputType.HEAD_SPAN;
-                        case "INSERT":
-                            return InputType.INSERT;
-                        default:
-                            return null;
-                    }
-                }).orElse(InputType.SKIP);
-    }
 
     public InputMode getInputMode() {
         return Optional.ofNullable(headers.getProperty("Mode"))

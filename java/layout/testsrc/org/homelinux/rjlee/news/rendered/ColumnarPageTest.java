@@ -15,9 +15,9 @@ import org.junit.jupiter.api.Test;
 import java.io.*;
 import java.util.Properties;
 
-class PageTest {
+class ColumnarPageTest {
 
-    private Page page;
+    private ColumnarPage page;
     private Settings settings = new Settings(new Properties());
 
     @BeforeEach
@@ -25,7 +25,7 @@ class PageTest {
         Properties properties = new Properties();
         properties.put("pageHeight", "5in");
         Settings settings = new Settings(properties);
-        this.page = new Page(1, 3, settings);
+        this.page = new ColumnarPage(1, 3, settings);
     }
 
     @Test

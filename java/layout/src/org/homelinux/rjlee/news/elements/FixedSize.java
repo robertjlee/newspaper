@@ -9,7 +9,7 @@ import java.io.PrintWriter;
 import java.nio.file.Path;
 
 /**
- * A fixed-size insert or multi-column article
+ * A fixed-size insert, full truck page, or Head-span article
  */
 public interface FixedSize extends Part {
     long cols();

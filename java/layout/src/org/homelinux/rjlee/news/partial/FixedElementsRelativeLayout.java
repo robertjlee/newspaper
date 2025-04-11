@@ -2,7 +2,8 @@ package org.homelinux.rjlee.news.partial;
 
 import org.homelinux.rjlee.news.elements.FixedSize;
 import org.homelinux.rjlee.news.logging.Logger;
-import org.homelinux.rjlee.news.rendered.Page;
+import org.homelinux.rjlee.news.rendered.ColumnarPage;
+import org.homelinux.rjlee.news.settings.SemVer;
 import org.homelinux.rjlee.news.settings.Settings;
 
 import java.io.PrintWriter;
@@ -87,13 +88,13 @@ public class FixedElementsRelativeLayout {
      * Bits filling this article
      */
     public List<LayoutSection> layoutSections = new ArrayList<>();
-    final Page p;
+    final ColumnarPage p;
 
     public String toString() {
         return String.format("PartialLayout:%fin:%s", vSize, layoutSections);
     }
 
-    public FixedElementsRelativeLayout(long numCols, long minCol, Page p, Settings settings) {
+    public FixedElementsRelativeLayout(long numCols, long minCol, ColumnarPage p, Settings settings) {
         this.numCols = numCols;
         this.col = numCols;
         this.minCol = minCol;

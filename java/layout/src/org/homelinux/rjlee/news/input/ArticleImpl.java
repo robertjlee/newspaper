@@ -14,7 +14,6 @@ import java.util.Map;
  */
 public class ArticleImpl extends ArticleText implements Article {
 
-    // TODO: articles with double-width columns
     private long splitCounter=0;
     private Map<Long, Long> continuedOn = new HashMap<>();
 

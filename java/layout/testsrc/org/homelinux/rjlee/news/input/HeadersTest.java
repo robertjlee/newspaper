@@ -72,18 +72,6 @@ class HeadersTest {
     }
 
     @ParameterizedTest
-    @CsvSource(textBlock = "article,ARTICLE\n" +
-            ",SKIP\n" +
-            "HeadSpan,HEAD_SPAN\n" +
-            "inSeRT,INSERT\n")
-    void getInputType(String t, Headers.InputType expecd) throws IOException {
-        try (BufferedReader r = new BufferedReader(new StringReader("%#Type=" + t))) {
-            Headers h = new Headers(path, r, settings);
-            assertEquals(expecd, h.getInputType());
-        }
-    }
-
-    @ParameterizedTest
     @CsvSource(textBlock = "direct,LATEX\n" +
             ",LATEX\n" +
             "Latex,LATEX\n" +

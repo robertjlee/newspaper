@@ -4,7 +4,7 @@ import org.homelinux.rjlee.news.elements.FixedSize;
 import org.homelinux.rjlee.news.elements.Part;
 import org.homelinux.rjlee.news.input.Headers;
 import org.homelinux.rjlee.news.mockpath.MockPath;
-import org.homelinux.rjlee.news.rendered.Page;
+import org.homelinux.rjlee.news.rendered.ColumnarPage;
 import org.homelinux.rjlee.news.settings.Settings;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,7 +26,7 @@ class FixedElementsRelativeLayoutTest {
     void setUp() {
 
         settings = new Settings(new Properties());
-        Page page = new Page(1, 5, settings);
+        ColumnarPage page = new ColumnarPage(1, 5, settings);
         relativeLayout = new FixedElementsRelativeLayout(5, 0, page, settings);
     }
 
