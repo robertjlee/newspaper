@@ -122,9 +122,9 @@ public class FixedElementsRelativeLayout {
      * Attempt to fit a fixed-size item onto the vertical.
      *
      * @param i to be fit
-     * @return true if the item was fit, false otherwise. Note that not all possibilities that "can" fit are guaranteed to.
+     * @return if the item was fit returns a whole number containing the extra columns added; negative otherwise. Note that not all possibilities that "can" fit are guaranteed to.
      */
-    public boolean fit(FixedSize i, long allowPageEnlargementByCols) {
+    public long fit(FixedSize i, long allowPageEnlargementByCols) {
         PrintWriter algoLog = Logger.getInstance().algorithm();
 
         long width = i.cols();
@@ -137,6 +137,7 @@ public class FixedElementsRelativeLayout {
                 long numExtraCols = (width + minCol) - numCols;
                 algoLog.println("Enlarged page from columns #" + numCols + "; added #" + numExtraCols + " columns");
                 addExtraColumns(numExtraCols);
+                allowPageEnlargementByCols -= numExtraCols;
             }
         }
         // Enlarge the page.
@@ -148,9 +149,9 @@ public class FixedElementsRelativeLayout {
         algoLog.printf("   %fin %fin %fin\n", length, vSize, settings.getColumnHeight());
         if (length + vSize <= settings.getColumnHeight()) {
             layout(i);
-            return true;
+            return 0;
         }
-        return fitByFirstFit(i, length, width);
+        return fitByFirstFit(i, length, width, allowPageEnlargementByCols);
 
     }
 
@@ -164,7 +165,7 @@ public class FixedElementsRelativeLayout {
         layoutSections.forEach(layoutSection -> layoutSection.inserts.forEach(in -> in.setNumColumnsOnPage(numCols)));
     }
 
-    boolean fitByFirstFit(FixedSize i, double iHeight, long iCols) {
+    long fitByFirstFit(FixedSize i, double iHeight, long iCols, long allowPageEnlargementByCols) {
         PrintWriter algoLog = Logger.getInstance().algorithm();
 
         // ignore stair-stepping, just try to fit the item.
@@ -181,21 +182,31 @@ public class FixedElementsRelativeLayout {
             if (section.startCol > iCols) {
                 algoLog.println(" - combining left of " + section);
                 section.merge(i, false, section.startCol - iCols);
-                return true;
+                return 0;
             }
             // fit "bit" right of section, if we can
             if (numCols - section.endCol - 1 >= iCols) {
                 algoLog.println(" - combining right of " + section);
                 section.merge(i, true, section.startCol);
-                return true;
+                return 0;
             }
             // slide "section" left to make space
             if (iCols + section.cols() <= numCols) {
                 section.merge(i, false, 0);
-                return true;
+                return 0;
             }
 
+            // enlarge the page if it will fit "bit" right of section
+            // (but skip if we're in 1.0.0-1.0.2, which did not do this)
+            if (settings.getVersion().compareTo(SemVer.valueOf("0.0.3")) >= 0
+                    && numCols - section.endCol + allowPageEnlargementByCols - 1 >= iCols) {
+                long numExtraCols = iCols - (numCols - section.endCol - 1);
+                addExtraColumns(numExtraCols);
+                algoLog.printf(" - enlarging by %d to combine right of %s%n", iCols, section);
+                section.merge(i, true, section.startCol);
+                return iCols;
+            }
         }
-        return false;
+        return -1;
     }
 }

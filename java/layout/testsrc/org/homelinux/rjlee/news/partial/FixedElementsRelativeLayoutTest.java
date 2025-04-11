@@ -9,7 +9,6 @@ import org.homelinux.rjlee.news.settings.Settings;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -148,7 +147,7 @@ class FixedElementsRelativeLayoutTest {
         FixedSize b = new FixedSizeInsert("B", 2, 1); // to fall below A, and take up all free space
         relativeLayout.fit(b, 0);
         FixedSize c = new FixedSizeInsert("B", 3, columnHeight - 0.5);
-        assertFalse(relativeLayout.fitByFirstFit(c, c.height(), c.cols()));
+        assertEquals(-1, relativeLayout.fitByFirstFit(c, c.height(), c.cols(), 0));
     }
 
     @Test
@@ -157,7 +156,7 @@ class FixedElementsRelativeLayoutTest {
         FixedSize a = new FixedSizeInsert("A", 2, columnHeight);
         relativeLayout.fit(a, 0);
         FixedSize b = new FixedSizeInsert("B", 1, columnHeight);
-        assertTrue(relativeLayout.fitByFirstFit(b, b.height(), b.cols()));
+        assertEquals(0, relativeLayout.fitByFirstFit(b, b.height(), b.cols(), 0));
     }
 
     @Test
@@ -168,7 +167,7 @@ class FixedElementsRelativeLayoutTest {
         FixedSize b = new FixedSizeInsert("B", settings.getColumnWidth() * 4, columnHeight / 3); // due to stair-stepping, goes left
         relativeLayout.fit(b, 0);
         FixedSize c = new FixedSizeInsert("B", settings.getColumnWidth(), columnHeight / 3);
-        assertTrue(relativeLayout.fitByFirstFit(c, c.height(), c.cols()));
+        assertEquals(0, relativeLayout.fitByFirstFit(c, c.height(), c.cols(), 0));
     }
 
     class FixedSizeInsert implements FixedSize {

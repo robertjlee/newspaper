@@ -196,8 +196,11 @@ public class NewspaperLayoutImpl implements NewspaperLayout {
             while (!is.isEmpty()) {
                 FixedSize fs = is.get(0);
                 logger.algorithm().println("Fitting fixed-size " + fs);
-                if (v.fit(fs, allowPageEnlargementByCols)) is.remove(0);
-                else {
+                long colsAdded;
+                if ((colsAdded = v.fit(fs, allowPageEnlargementByCols)) >= 0) {
+                    is.remove(0);
+                    allowPageEnlargementByCols -= colsAdded;
+                } else {
                     if (fs.height() > settings.getColumnHeight()) {
                         throw new IllegalArgumentException(String.format("Input " + fs.path().getFileName() + " would be longer than available page height. Increase page size, change to type article, or reduce size of insert."));
                     }
@@ -314,6 +317,8 @@ public class NewspaperLayoutImpl implements NewspaperLayout {
      * pages, so we don't output a blank. But only remove pages from the end, so that page numbers for "Page" headers match.
      */
     void trimEmptyPages() {
+        pages.removeIf(Page::isEmpty);
+        /*
         for (int i = pages.size() - 1; i >= 0; i--) {
             Page page = pages.get(i);
             if (page.isEmpty()) {
@@ -322,6 +327,7 @@ public class NewspaperLayoutImpl implements NewspaperLayout {
                 break; // we expect empty pages to be at the end.
             }
         }
+         */
     }
 
     /**
