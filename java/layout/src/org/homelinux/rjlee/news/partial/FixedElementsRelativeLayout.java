@@ -102,7 +102,11 @@ public class FixedElementsRelativeLayout {
         this.settings = settings;
     }
 
-    private void layout(FixedSize i) { // add to bottom of vertical; caller checks sizing
+    /**
+     * Lay out a fixed-size element at the bottom of the vertical; caller checks sizing.
+     * @param i to lay out.
+     */
+    private void layoutBelow(FixedSize i) {
         boolean wasEmpty = vSize == 0;
         Optional<Long> colHint = Optional.ofNullable(i.columnHint()).map(l -> l - 1);
         long col;
@@ -148,7 +152,7 @@ public class FixedElementsRelativeLayout {
         algoLog.printf(" - layout of fixed size %d cols by %fin onto %d col page\n", width, length, numCols);
         algoLog.printf("   %fin %fin %fin\n", length, vSize, settings.getColumnHeight());
         if (length + vSize <= settings.getColumnHeight()) {
-            layout(i);
+            layoutBelow(i);
             return 0;
         }
         return fitByFirstFit(i, length, width, allowPageEnlargementByCols);

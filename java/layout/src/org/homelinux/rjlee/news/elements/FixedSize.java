@@ -1,6 +1,7 @@
 package org.homelinux.rjlee.news.elements;
 
 import org.homelinux.rjlee.news.input.Headers;
+import org.homelinux.rjlee.news.layout.Magnet;
 import org.homelinux.rjlee.news.parsing.LengthParser;
 import org.homelinux.rjlee.news.settings.Settings;
 
@@ -59,5 +60,9 @@ public interface FixedSize extends Part {
         Headers headers = getHeaders();
         long rtn = headers.getIntegerHeader("ColumnHint", 0, Long.MAX_VALUE, -1);
         return rtn >= 0 ? rtn : null;
+    }
+
+    default Magnet getMagnet() {
+        return getHeaders().getMagnet();
     }
 }

@@ -352,7 +352,7 @@ class NewspaperLayoutImplTest {
                 " Column14:[Fragment for part [art1.tex:13 => 26.574803 in]@[0.0-26.5748031496063]]\n" +
                 " Column15:[Fragment for part [art1.tex:14 => 26.574803 in]@[0.0-26.5748031496063]]\n" +
                 " Column16:[Fragment for part [art1.tex:15 => 26.574803 in]@[0.0-26.5748031496063]]\n" +
-                ", PAGE 1\n" +
+                ", PAGE 2\n" +
                 " Column1:[Fragment for part [art2.tex:0 => 3.141500 in]@[0.0-3.1415], Fragment for part V-mode alley{cols=1}@[3.1415-3.2665], Fragment for part [art3.tex:0 => 3.141500 in]@[3.2665-6.408], Fragment empty@[6.408-26.5748031496063]]\n" +
                 "]", newLayout.toString());
     }
@@ -455,8 +455,9 @@ class NewspaperLayoutImplTest {
         newLayout.layOutNewspaper();
         assertEquals("[PAGE 1\n" +
                 " Column1:[Fragment for part [art1.tex:0 => 3.141500 in]@[0.0-3.1415], Fragment empty@[3.1415-26.5748031496063]]\n" +
-                ", PAGE 2\n" +
-                " Column1:[Fragment empty@[0.0-26.5748031496063]]\n" +
+                // RL: We now trim empty pages
+//                ", PAGE 2\n" +
+//                " Column1:[Fragment empty@[0.0-26.5748031496063]]\n" +
                 ", PAGE 3\n" +
                 " Column1:[Fragment for part [art2.tex:0 => 3.141500 in]@[0.0-3.1415], Fragment empty@[3.1415-26.5748031496063]]\n" +
                 "]", newLayout.toString());
@@ -487,8 +488,9 @@ class NewspaperLayoutImplTest {
 
         assertEquals("[PAGE 1\n" +
                 " Column1:[Fragment for part [art1.tex:0 => 3.141500 in]@[0.0-3.1415], Fragment empty@[3.1415-26.5748031496063]]\n" +
-                ", PAGE 2\n" +
-                " Column1:[Fragment empty@[0.0-26.5748031496063]]\n" +
+                // RL: We now trim empty pages
+//                ", PAGE 2\n" +
+//                " Column1:[Fragment empty@[0.0-26.5748031496063]]\n" +
                 ", PAGE 3\n" +
                 " Column1:[Fragment for part [art2.tex:0 => 3.141500 in]@[0.0-3.1415], Fragment empty@[3.1415-26.5748031496063]]\n" +
                 "]", newLayout.toString());

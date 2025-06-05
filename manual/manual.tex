@@ -1364,6 +1364,31 @@ The allowable header values are:-\nopagebreak
   set to true, this header causes the \LaTeX\ argument to be appended
   to the end of the article. This can be used with any input mode.
 }
+\header{MagnetNorth}{Percentage}{\textit{empty}}{
+  Not to be used with \texttt{Type=article}.
+
+  When specified, an additional step is performed after laying out the
+  fixed inserts on the page, and before laying out paste-up articles.
+
+  The total free space directly above and below this insert is
+  calculated, using the minimum across columns if there is more than
+  one column. The document is then moved vertically so that this
+  percentage of this total free space appears above the document.
+
+  Thus, if you say \texttt{MagnetNorth: 100\%}, the insert will be
+  ``attracted'' to the top of the page, and move as far as possible in
+  that direction.
+
+  Only one pass is made and each article is moved separately, but in
+  general this is sufficient to allow many manual tweaks of the layout.
+}
+\header{MagnetSouth}{Percentage}{\textit{empty}}{ As
+  \texttt{MagnetNorth}, but the meaning is reversed --- thus
+  \texttt{100\%} means to move the article down as far as possible on
+  the page.
+
+  \texttt{MagnetNorth} and texttt{MagnetSouth} may not both appear on the same file.
+}
 \end{multicols}
 
 \section*{Command-Line}

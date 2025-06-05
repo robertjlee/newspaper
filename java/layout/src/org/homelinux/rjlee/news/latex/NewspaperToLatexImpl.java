@@ -155,7 +155,7 @@ public class NewspaperToLatexImpl extends LatexInteraction implements NewspaperT
                     //w.println("\\\\\\hbox{}\\vfill");
                     out.println("\\pagebreak");
             }
-            if (allPages.get(allPages.size()-1) instanceof Truck) {
+            if (!allPages.isEmpty() && allPages.get(allPages.size()-1) instanceof Truck) {
                 // output any queued trucks at the end of the document
                 out.println("\\pagebreak");
             }

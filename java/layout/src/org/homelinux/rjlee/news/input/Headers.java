@@ -1,5 +1,6 @@
 package org.homelinux.rjlee.news.input;
 
+import org.homelinux.rjlee.news.layout.Magnet;
 import org.homelinux.rjlee.news.logging.Logger;
 import org.homelinux.rjlee.news.parsing.LengthParser;
 import org.homelinux.rjlee.news.settings.FontCommand;
@@ -39,7 +40,7 @@ public class Headers implements PreambleLinesSupplier {
          * Use {@code \markdownInput{}} or a {@code markdown} environment, e.g. from the markdown package,
          * to include the file as Markdown.
          */
-        MARKDOWN
+        MARKDOWN;
     }
 
     private final Path inputFilePath;
@@ -83,6 +84,13 @@ public class Headers implements PreambleLinesSupplier {
 
     public String getHeader(String name, String defaultValue) {
         return headers.getProperty(name, defaultValue);
+    }
+
+    public Magnet getMagnet() {
+        double n = getPercentHeader("MagnetNorth", 0);
+        double s = getPercentHeader("MagnetSouth", 0);
+        if (n == s && n == 0) return  null;
+        return new Magnet(n,s);
     }
 
     /**
@@ -149,6 +157,17 @@ public class Headers implements PreambleLinesSupplier {
             return LengthParser.readLength(strValue);
         } catch (RuntimeException e) {
             throw new IllegalArgumentException(String.format("%s: Bad header value [%s] for length [%s]; %s", inputFilePath, name, strValue, e.getMessage()), e);
+        }
+    }
+
+    public double getPercentHeader(String name, double defaultValue) {
+        String strValue = headers.getProperty(name, String.valueOf(defaultValue));
+        try {
+            double rtn = Double.parseDouble(strValue.replace("%", ""));
+            if (rtn < -100 || rtn > 100) throw new NumberFormatException(String.format("Out of range [-100-+100] for percent [%s]", rtn));
+            return rtn;
+        } catch (RuntimeException e) {
+            throw new IllegalArgumentException(String.format("%s: Bad header value [%s] for percent [%s]; %s", inputFilePath, name, strValue, e.getMessage()), e);
         }
     }
 

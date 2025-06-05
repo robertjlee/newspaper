@@ -5,6 +5,7 @@ import org.homelinux.rjlee.news.input.*;
 import org.homelinux.rjlee.news.latex.FileCachingLengthCalculator;
 import org.homelinux.rjlee.news.latex.LaTeXLengthCalculator;
 import org.homelinux.rjlee.news.latex.LengthCalculator;
+import org.homelinux.rjlee.news.layout.Magnet;
 import org.homelinux.rjlee.news.logging.Logger;
 import org.homelinux.rjlee.news.partial.FixedElementsRelativeLayout;
 import org.homelinux.rjlee.news.rendered.Col;
@@ -82,7 +83,7 @@ public class NewspaperLayoutImpl implements NewspaperLayout {
         algorithm.printf("%s column inches over %d columns @ %d cols/page => %d pages mostly %d cols\n",
                 columnInches, columnPageResult.getTotalColumns(), settings.getMaxColsPerPage(), columnPageResult.getNumPages(), colsPerPage);
 
-        algorithm.printf("Estimate %f column-inches before current pages are full",
+        algorithm.printf("Estimate %f column-inches before current pages are full%n",
                 (columnPageResult.getNumPages() * settings.getMaxColsPerPage() * settings.getColumnHeight()) - columnInches);
 
         inputs.forEach(i -> i.setNumColumnsOnPage(colsPerPage));
@@ -291,7 +292,9 @@ public class NewspaperLayoutImpl implements NewspaperLayout {
     private void place(ColumnarPage p, FixedElementsRelativeLayout v) {
         double cursor = 0;
         PrintWriter algorithm = Logger.getInstance().algorithm();
+        Map<FixedSize, List<Col.ColFragment>> magnetCache = new HashMap<>();
         algorithm.println("Moving fixed elements onto page " + p.getSimplePageNo());
+        boolean anyMagnets = false;
         for (FixedElementsRelativeLayout.LayoutSection b : v.layoutSections) {
             algorithm.println(": Bit " + b);
             int c = (int) b.getStartCol();
@@ -300,14 +303,45 @@ public class NewspaperLayoutImpl implements NewspaperLayout {
                     System.out.println("0-height insert " + i + "; will now crash.");
                 }
                 double end = cursor + i.height();
+                boolean hasMagnet = i.getMagnet() != null;
+                anyMagnets |= hasMagnet;
+                if (hasMagnet) magnetCache.put(i, new LinkedList<>());
                 for (int col = c; col < c + i.cols(); ++col) {
                     //System.out.println(": : Insert " + i + " on col " + col);
                     Col cc = p.getColumns().get(col);
-                    cc.set(cc.new ColFragment(i, cursor, end, null));
+                    Col.ColFragment frag = cc.new ColFragment(i, cursor, end, null);
+                    cc.set(frag);
+                    if (hasMagnet) magnetCache.get(i).add(frag);
                 }
                 c += (int) i.cols();
             }
             cursor += b.getLength();
+        }
+        // magnets pull an article up or down if there's space for it.
+        if (anyMagnets) {
+            for (FixedElementsRelativeLayout.LayoutSection b : v.layoutSections) {
+                for (FixedSize i : b.getInserts()) {
+                    Magnet m = i.getMagnet();
+                    if (m != null) {
+                        // get all the colfragments for insert i
+                        List<Col.ColFragment> colFragments = Objects.requireNonNull(magnetCache.get(i));
+                        double minAbove = Double.MAX_VALUE, minBelow = Double.MAX_VALUE;
+                        for (Col.ColFragment colFragment : colFragments) {
+                            minAbove = Math.min(minAbove, colFragment.spaceAbove());
+                            minBelow = Math.min(minBelow, colFragment.spaceBelow());
+                        }
+                        // work out min above each colfragment
+                        // work out min space below each colframent
+                        double totalSpace = minAbove + minBelow;
+                        double newTopSpace = m.calculateTopSpace(totalSpace);
+                        double delta = newTopSpace - minAbove;
+                        // move column down by delta
+                        for (Col.ColFragment colFragment : colFragments) {
+                            colFragment.adjustDown(delta);
+                        }
+                    }
+                }
+            }
         }
     }
 
