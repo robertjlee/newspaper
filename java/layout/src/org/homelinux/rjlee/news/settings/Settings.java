@@ -34,7 +34,8 @@ public class Settings implements PreambleLinesSupplier {
         allowTexFileOverwrite,
         inputWithoutCopy,
         defaultFontFamilyFromHeaders,
-        enableLaTeXHooks
+        enableLaTeXHooks,
+        stairStepLayout
     }
 
     /**
@@ -453,6 +454,10 @@ public class Settings implements PreambleLinesSupplier {
 
     public boolean isEnableLateXHooks() {
         return flags.contains(Flag.enableLaTeXHooks);
+    }
+
+    public boolean isStairStepLayout() {
+        return flags.contains(Flag.stairStepLayout);
     }
 
     public DebugLevel getStdOutLevel() {

@@ -27,7 +27,7 @@ class SettingsTest {
             "markdown=\\usepackage[smartEllipses,fancyLists]{markdown}, continuedOnPageText=\\makebox[\\textwidth]{\\hfill\\textit{\\scriptsize Continued on page \\otherpage\\dots\\hspace{-1em}}}, continuedFromPageText=\\makebox[\\textwidth]{\\textit{\\scriptsize\\hspace{-1em}\\dots continued from page \\otherpage}\\hfill}, " +
             "logFile=layout.log, stdOutLevel=ELEMENTS, stdErrLevel=SILENT, logFileLevel=ALGORITHM, " +
             "headerFont=\\fontencoding{TU}\\fontfamily{\\rmdefault}\\fontseries{bc}\\fontshape{n}\\fontsize{18}{20}\\selectfont, " +
-            "allowTexFileOverwrite=false, inputWithoutCopy=false, defaultFontFamilyFromHeaders=false, enableLaTeXHooks=false}";
+            "allowTexFileOverwrite=false, inputWithoutCopy=false, defaultFontFamilyFromHeaders=false, enableLaTeXHooks=false, stairStepLayout=false}";
 
     private int returnValue = Integer.MIN_VALUE; // not called
 
@@ -83,6 +83,7 @@ class SettingsTest {
         p.put("continuedFromPageText", "\\hfill(From page \\otherpage)");
         p.put("enableLaTeXHooks", "truE");
         p.put("maxSquashVSpace", "20in");
+        p.put("stairStepLayout", "TruE");
 
         Settings s = new Settings(p);
         assertEquals("Settings{version=0.0.2, pageWidth=1.1, pageHeight=2.2, columnWidth=3.3, columnHeight=5.5, " +
@@ -94,7 +95,7 @@ class SettingsTest {
                 "markdown=\\usepackage[smartEllipsis=true]{markdown}, continuedOnPageText=(Ctd. page \\otherpage)\\hfill, continuedFromPageText=\\hfill(From page \\otherpage), " +
                 "logFile=log.txt, stdOutLevel=QUIET, stdErrLevel=DUMP_ALL, logFileLevel=ELEMENTS, " +
                 "headerFont=\\null, " +
-                "allowTexFileOverwrite=true, inputWithoutCopy=true, defaultFontFamilyFromHeaders=true, enableLaTeXHooks=true}", s.toString());
+                "allowTexFileOverwrite=true, inputWithoutCopy=true, defaultFontFamilyFromHeaders=true, enableLaTeXHooks=true, stairStepLayout=true}", s.toString());
     }
 
     @ParameterizedTest

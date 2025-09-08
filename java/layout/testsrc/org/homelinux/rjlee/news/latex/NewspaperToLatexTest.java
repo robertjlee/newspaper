@@ -208,7 +208,9 @@ class NewspaperToLatexTest {
                 "}\n" +
                 "\\usepackage[fontsize=10]{fontsize}[2021/08/04]\n" +
                 "\\newlength\\headlineskip\\headlineskip=2pt plus 2pt\\relax\n" +
+                "\\newlength\\subheadlineskip\\subheadlineskip=1pt plus 1pt\\relax\n" +
                 "\\newcommand{\\headline}[1]{\\vbox{\\topsep=0pt\\parsep=0pt\\begin{center}\\fontseries{bx}\\fontsize{18}{20}\\selectfont #1\\vspace{\\headlineskip}\\end{center}}}\n" +
+                "\\newcommand{\\subheadline}[1]{\\raisebox{\\subheadlineskip}{\\topsep=0pt\\parsep=0pt\\begin{center}\\fontseries{rm}\\fontsize{14}{16}\\selectfont #1\\vspace{\\subheadlineskip}\\end{center}}}\n" +
                 "\\newcommand{\\continuedOn}[1]{\\nointerlineskip\\vfill\\def\\otherpage{#1}\\makebox[\\textwidth]{\\hfill\\textit{\\scriptsize Continued on page \\otherpage\\dots\\hspace{-1em}}}}\n" +
                 "\\newcommand{\\continuedFrom}[1]{\\vbox{\\def\\otherpage{#1}\\makebox[\\textwidth]{\\textit{\\scriptsize\\hspace{-1em}\\dots continued from page \\otherpage}\\hfill}}\\nointerlineskip}\n" +
                 "\\makeatother\n" +

@@ -258,8 +258,10 @@ public abstract class LatexInteraction {
 
         // TODO: make spaces configurable!
         out.println("\\newlength\\headlineskip\\headlineskip=2pt plus 2pt\\relax");
+        out.println("\\newlength\\subheadlineskip\\subheadlineskip=1pt plus 1pt\\relax");
         // RL: the \vbox here ensures that we don't break the headline, and also forces us into vertical mode.
         out.println("\\newcommand{\\headline}[1]{\\vbox{\\topsep=0pt\\parsep=0pt\\begin{center}\\fontseries{bx}\\fontsize{18}{20}\\selectfont #1\\vspace{\\headlineskip}\\end{center}}}");
+        out.println("\\newcommand{\\subheadline}[1]{\\raisebox{\\subheadlineskip}{\\topsep=0pt\\parsep=0pt\\begin{center}\\fontseries{rm}\\fontsize{14}{16}\\selectfont #1\\vspace{\\subheadlineskip}\\end{center}}}");
 
         out.printf("\\newcommand{\\continuedOn}[1]{\\nointerlineskip\\vfill\\def\\otherpage{#1}%s}\n", settings.getContinuedOnPageText());
         out.printf("\\newcommand{\\continuedFrom}[1]{\\vbox{\\def\\otherpage{#1}%s}\\nointerlineskip}\n", settings.getContinuedFromPageText());

@@ -70,6 +70,16 @@ public abstract class ArticleText implements Input {
             out.print(headline);
             out.println("}\n\\par");
         });
+        headers.ifHeader("SubHead", subheadline -> {
+            out.print("\\headline{");
+            if (headers.isAnyHeaderSet("SubHeadFamily", "SubHeadSeries", "SubHeadShape", "SubHeadSize", "SubHeadSpacing", "SubHeadCommand")) {
+                FontCommand def = settings.getHeaderFont();
+                out.print(headers.getFontCommandFromHeaders("SubHead", def.getFamily(), def.getSeries(), def.getSize()));
+                out.println("{}"); // ensure the last output command-name is treated as is.
+            }
+            out.print(subheadline);
+            out.println("}\n\\par");
+        });
         copyToTex(headers.getInputMode(), settings, out, outPath);
     }
 

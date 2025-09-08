@@ -7,10 +7,13 @@ import org.homelinux.rjlee.news.latex.LaTeXLengthCalculator;
 import org.homelinux.rjlee.news.latex.LengthCalculator;
 import org.homelinux.rjlee.news.layout.Magnet;
 import org.homelinux.rjlee.news.logging.Logger;
-import org.homelinux.rjlee.news.partial.FixedElementsRelativeLayout;
+import org.homelinux.rjlee.news.partial.AbstractFixedElementsLayout;
+import org.homelinux.rjlee.news.partial.LeftToRightFirstLayout;
+import org.homelinux.rjlee.news.partial.StairStepLayout;
 import org.homelinux.rjlee.news.rendered.Col;
 import org.homelinux.rjlee.news.rendered.ColumnarPage;
 import org.homelinux.rjlee.news.rendered.Page;
+import org.homelinux.rjlee.news.settings.SemVer;
 import org.homelinux.rjlee.news.settings.Settings;
 
 import java.io.IOException;
@@ -190,10 +193,15 @@ public class NewspaperLayoutImpl implements NewspaperLayout {
         if (!p.isEmpty()) {
             // issue 19: only do FixedElementsRelativeLayout if the page is empty. FERL doesn't support partial pages.
             Collections.reverse(is);
-            is.forEach(unprocessed -> inputs.add(0, (Input) unprocessed));
+            is.forEach(unprocessed -> addUnprocessed((Input) unprocessed));
         } else {
             // now lay out the fixed inserts
-            FixedElementsRelativeLayout v = new FixedElementsRelativeLayout(p.numCols(), 0, p, settings);
+            AbstractFixedElementsLayout v;
+            if (settings.isStairStepLayout() || settings.getVersion().compareTo(SemVer.valueOf("0.0.4")) < 0) {
+                v = new StairStepLayout(p.numCols(), 0, p, settings);
+            } else {
+                v = new LeftToRightFirstLayout(p.numCols(), 0, p, settings);
+            }
             while (!is.isEmpty()) {
                 FixedSize fs = is.get(0);
                 logger.algorithm().println("Fitting fixed-size " + fs);
@@ -207,7 +215,7 @@ public class NewspaperLayoutImpl implements NewspaperLayout {
                     }
                     logger.algorithm().printf("Failed to fit insert %s; deferring %d fixed articles to next page\n", fs, is.size());
                     Collections.reverse(is);
-                    is.forEach(unprocessed -> inputs.add(0, (Input) unprocessed));
+                    is.forEach(unprocessed -> addUnprocessed((Input) unprocessed));
                     break;
                 }
             }
@@ -245,7 +253,7 @@ public class NewspaperLayoutImpl implements NewspaperLayout {
                 logger.algorithm().println("Exactly filled page!");
                 while (!ip.isEmpty()) {
                     logger.algorithm().println(" - Deferring to next page: " + ip);
-                    inputs.add(0, ip.remove(ip.size() - 1));
+                    addUnprocessed(ip.remove(ip.size() - 1));
                 }
                 break;
             }
@@ -277,7 +285,7 @@ public class NewspaperLayoutImpl implements NewspaperLayout {
             }
             if (overflow != null) {
                 // the page is filled. There may be more spaces, but we can't fit an article in them.
-                ip.forEach(unprocessed -> inputs.add(0, unprocessed));
+                ip.forEach(this::addUnprocessed);
                 ip.clear();
             }
         }
@@ -286,16 +294,26 @@ public class NewspaperLayoutImpl implements NewspaperLayout {
         logger.algorithm().println(p);
     }
 
+    private void addUnprocessed(Input unprocessed) {
+        // add to the start of the list, but skip over any trucks (or else they end up as the last page due to repeated overflow)
+        int i;
+        for (i=0; i < inputs.size(); i++) {
+            if (!((inputs.get(i)) instanceof Truck))
+                break;
+        }
+        inputs.add(i, unprocessed);
+    }
+
     /**
      * Place inserts onto the page
      */
-    private void place(ColumnarPage p, FixedElementsRelativeLayout v) {
+    private void place(ColumnarPage p, AbstractFixedElementsLayout v) {
         double cursor = 0;
         PrintWriter algorithm = Logger.getInstance().algorithm();
         Map<FixedSize, List<Col.ColFragment>> magnetCache = new HashMap<>();
         algorithm.println("Moving fixed elements onto page " + p.getSimplePageNo());
         boolean anyMagnets = false;
-        for (FixedElementsRelativeLayout.LayoutSection b : v.layoutSections) {
+        for (StairStepLayout.LayoutSection b : v.layoutSections) {
             algorithm.println(": Bit " + b);
             int c = (int) b.getStartCol();
             for (FixedSize i : b.getInserts()) {
@@ -319,7 +337,7 @@ public class NewspaperLayoutImpl implements NewspaperLayout {
         }
         // magnets pull an article up or down if there's space for it.
         if (anyMagnets) {
-            for (FixedElementsRelativeLayout.LayoutSection b : v.layoutSections) {
+            for (StairStepLayout.LayoutSection b : v.layoutSections) {
                 for (FixedSize i : b.getInserts()) {
                     Magnet m = i.getMagnet();
                     if (m != null) {

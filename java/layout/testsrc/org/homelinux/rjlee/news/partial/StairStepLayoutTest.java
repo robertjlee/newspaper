@@ -16,44 +16,44 @@ import java.util.Properties;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class FixedElementsRelativeLayoutTest {
+class StairStepLayoutTest {
 
     private Settings settings;
-    private FixedElementsRelativeLayout relativeLayout;
+    private StairStepLayout relativeLayout;
 
     @BeforeEach
     void setUp() {
 
         settings = new Settings(new Properties());
         ColumnarPage page = new ColumnarPage(1, 5, settings);
-        relativeLayout = new FixedElementsRelativeLayout(5, 0, page, settings);
+        relativeLayout = new StairStepLayout(5, 0, page, settings);
     }
 
     @Test
     void insert_cols() {
         FixedSize a = new FixedSizeInsert("A", 0.5, 0.5);
-        FixedElementsRelativeLayout.LayoutSection sectionA = relativeLayout.new LayoutSection(a, 1);
+        StairStepLayout.LayoutSection sectionA = relativeLayout.new LayoutSection(a, 1);
         assertEquals(1, sectionA.cols(), "Should be in columns, not inches");
     }
 
     @Test
     void insert_length() {
         FixedSize a = new FixedSizeInsert("A", 0.5, 0.5);
-        FixedElementsRelativeLayout.LayoutSection sectionA = relativeLayout.new LayoutSection(a, 1);
+        StairStepLayout.LayoutSection sectionA = relativeLayout.new LayoutSection(a, 1);
         assertEquals(0.5, sectionA.getLength(), "Should be in inches");
     }
 
     @Test
     void insert_startCol() {
         FixedSize a = new FixedSizeInsert("A", 0.5, 0.5);
-        FixedElementsRelativeLayout.LayoutSection sectionA = relativeLayout.new LayoutSection(a, 2);
+        StairStepLayout.LayoutSection sectionA = relativeLayout.new LayoutSection(a, 2);
         assertEquals(2, sectionA.getStartCol());
     }
 
     @Test
     void insert_inserts() {
         FixedSize a = new FixedSizeInsert("A", 0.5, 0.5);
-        FixedElementsRelativeLayout.LayoutSection sectionA = relativeLayout.new LayoutSection(a, 1);
+        StairStepLayout.LayoutSection sectionA = relativeLayout.new LayoutSection(a, 1);
         FixedSize fixedSize = new FixedSizeInsert("B", 1, 5.1);
         sectionA.merge(fixedSize, true, 1);
         assertEquals(Arrays.asList(a, fixedSize), sectionA.getInserts());
@@ -76,7 +76,7 @@ class FixedElementsRelativeLayoutTest {
     @Test
     void merge_offPageLeft() {
         FixedSize a = new FixedSizeInsert("A", 0.5, 0.5);
-        FixedElementsRelativeLayout.LayoutSection sectionA = relativeLayout.new LayoutSection(a, 1);
+        StairStepLayout.LayoutSection sectionA = relativeLayout.new LayoutSection(a, 1);
         FixedSize fixedSize = new FixedSizeInsert("B", 5, 5.1);
         IllegalStateException ex = assertThrows(IllegalStateException.class, () -> sectionA.merge(fixedSize, true, -1));
         assertEquals("Insert B(5.0×5.1) attempt to set at col -1; off the page!", ex.getMessage());
@@ -85,7 +85,7 @@ class FixedElementsRelativeLayoutTest {
     @Test
     void merge_offPageRight() {
         FixedSize a = new FixedSizeInsert("A", 0.5, 0.5);
-        FixedElementsRelativeLayout.LayoutSection sectionA = relativeLayout.new LayoutSection(a, 1);
+        StairStepLayout.LayoutSection sectionA = relativeLayout.new LayoutSection(a, 1);
         FixedSize fixedSize = new FixedSizeInsert("B", 5, 5.1);
         IllegalStateException ex = assertThrows(IllegalStateException.class, () -> sectionA.merge(fixedSize, true, 5));
         assertEquals("Insert B(5.0×5.1) from col 5 will overflow 5 columns by using column 9", ex.getMessage());
