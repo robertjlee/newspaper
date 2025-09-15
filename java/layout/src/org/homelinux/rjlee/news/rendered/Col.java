@@ -58,6 +58,8 @@ public class Col {
             this.end = end;
             this.continuedFrom = continuedFrom;
             if (start >= end) throw new IllegalArgumentException("0-height column! " + start + "-" + end + " in");
+            if (end > settings.getColumnHeight())
+                throw new IllegalArgumentException("Column fragment exceeds column height! " + i + start + "-" + end + " in");
         }
 
         /**
@@ -69,6 +71,8 @@ public class Col {
             this.end = start + i.height();
             if (start >= end) throw new IllegalArgumentException("0-height column!" + start + "-" + end + " in");
             continuedFrom = null;
+            if (end > settings.getColumnHeight())
+                throw new IllegalArgumentException("Column fragment exceeds column height! " + i + start + "-" + end + " in");
         }
 
         public double start() {

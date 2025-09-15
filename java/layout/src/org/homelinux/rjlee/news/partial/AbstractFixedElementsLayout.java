@@ -101,18 +101,18 @@ public abstract class AbstractFixedElementsLayout {
             // fit "bit" left of section, if we can
             if (section.startCol > iCols) {
                 algoLog.println(" - combining left of " + section);
-                section.merge(i, false, section.startCol - iCols);
+                vSize += section.merge(i, false, section.startCol - iCols);
                 return 0;
             }
             // fit "bit" right of section, if we can
             if (numCols - section.endCol - 1 >= iCols) {
                 algoLog.println(" - combining right of " + section);
-                section.merge(i, true, section.startCol);
+                vSize += section.merge(i, true, section.startCol);
                 return 0;
             }
             // slide "section" left to make space
             if (iCols + section.cols() <= numCols) {
-                section.merge(i, false, 0);
+                vSize += section.merge(i, false, 0);
                 return 0;
             }
 
@@ -123,7 +123,7 @@ public abstract class AbstractFixedElementsLayout {
                 long numExtraCols = iCols - (numCols - section.endCol - 1);
                 addExtraColumns(numExtraCols);
                 algoLog.printf(" - enlarging by %d to combine right of %s%n", iCols, section);
-                section.merge(i, true, section.startCol);
+                vSize += section.merge(i, true, section.startCol);
                 return iCols;
             }
         }
@@ -147,7 +147,15 @@ public abstract class AbstractFixedElementsLayout {
                 throw new IllegalStateException("Insert " + i + " from col " + startCol + " will overflow " + numCols + " columns by using column " + endCol);
         }
 
-        void merge(FixedSize i, boolean append, long newStartCol) {
+        /**
+         *
+         * @param i to me merged with this section
+         * @param append true to add to the right, false to the left
+         * @param newStartCol new start column for merged block
+         * @return any additional height used by this section to accommodate the {@code i}, inches
+         */
+        double merge(FixedSize i, boolean append, long newStartCol) {
+            double oldLength = length;
             if (append) inserts.add(i);
             else inserts.add(0, i);
             startCol = newStartCol;
@@ -157,6 +165,7 @@ public abstract class AbstractFixedElementsLayout {
                 throw new IllegalStateException("Insert " + i + " attempt to set at col " + startCol + "; off the page!");
             if (endCol >= numCols)
                 throw new IllegalStateException("Insert " + i + " from col " + startCol + " will overflow " + numCols + " columns by using column " + endCol);
+            return length - oldLength;
         }
 
         long cols() {
