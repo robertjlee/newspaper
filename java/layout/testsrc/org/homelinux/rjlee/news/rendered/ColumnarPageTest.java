@@ -132,13 +132,13 @@ class ColumnarPageTest {
                     () -> Assertions.assertAll("Column 2",
                             () ->
                             Assertions.assertTrue(sw.toString().contains("\\begin{minipage}[b][4.500000in][t]{1.500000in}% column 2\n" +
-                                    "\\begin{minipage}[b][3.141500in][t]{1.500000in}%Fragment art.tex\n" +
+                                    "\\begin{minipage}[b][1.641500in][t]{1.500000in}%Fragment art.tex\n" +
                                     "% art.tex part 2 of 2\n" +
-                                    "\\typeout{Column 2: To fill height 3.141500in, box height=\\the\\htsplitbox{art.tex}{2} at end of article}\n" +
-                                    "\\usesplitbox{art.tex}{2}% target=3.141500in\n" +
+                                    "\\typeout{Column 2: To fill height 1.641500in, box height=\\the\\htsplitbox{art.tex}{2} at end of article}\n" +
+                                    "\\usesplitbox{art.tex}{2}% target=1.641500in\n" +
                                     "\\end{minipage}\\par% Fragment art.tex\n" +
                                     "\\nointerlineskip%\n" +
-                                    "%Empty fragment Fragment empty@[3.1415-4.5]\n" +
+                                    "%Empty fragment Fragment empty@[1.6415000000000002-4.5]\n" +
                                     "\\end{minipage}% column 2\n"), sw::toString))
             );
         }

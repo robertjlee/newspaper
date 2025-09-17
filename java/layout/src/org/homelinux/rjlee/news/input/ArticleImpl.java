@@ -46,7 +46,7 @@ public class ArticleImpl extends ArticleText implements Article {
 
     @Override
     public ArticleFragment splitRemainingArticle(double availableHeight) {
-        double height = columnInches();
+        double height = columnInches() - getFragments().stream().mapToDouble(x -> x).sum();
         return new ArticleFragmentImpl(this, this.splitCounter++, height, getSettings());
     }
 
