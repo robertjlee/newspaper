@@ -48,7 +48,8 @@ class ColTest {
     @Test
     void setFailed() {
         Part p = new Valley(settings, 2);
-        Col.ColFragment fragment = col.new ColFragment(p, 1, settings.getColumnHeight() * 2, null);
+        Col.ColFragment fragment = col.new ColFragment(p, 1, settings.getColumnHeight(), null);
+        fragment.adjustEnd(settings.getColumnHeight() * 2);
         IllegalStateException ex = assertThrows(IllegalStateException.class, () -> col.set(fragment));
         assertEquals(String.format("Failed to place fixed-place element %s on col %s", fragment, col), ex.getMessage());
     }
