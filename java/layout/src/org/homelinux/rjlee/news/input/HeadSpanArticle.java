@@ -72,7 +72,7 @@ public class HeadSpanArticle extends ArticleText implements FixedSize {
         getHeaders().ifHeader("Head", headline ->
                 out.printf("\\parbox{%fin}{\\center\\headline{%s}}\\par\n", widthForSizing, headline));
         getHeaders().ifHeader("Subhead", subHeadline ->
-                out.printf("\\parbox{%fin}{\\center\\subHeadline{%s}}\\par\n", widthForSizing, subHeadline));
+                out.printf("\\parbox{%fin}{\\center\\subheadline{%s}}\\par\n", widthForSizing, subHeadline));
         //out.println("}\\endgroup\\par");
 //        out.println("\\par");
         // NB: we must call the cols() method to recalculate the number of columns, to support full-width in case the max-cols-per-page has changed.
