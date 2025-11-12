@@ -48,6 +48,10 @@ public class LaTeXLengthCalculator implements LengthCalculator {
                 e.printStackTrace(warningLogger);
             }
         });
-        return ll.calculate();
+        try {
+            return ll.calculate();
+        } catch (RuntimeException e) {
+            throw new RuntimeException("Error occurred calculating length for " + articleText.getPath() + ": " + e.getMessage(), e);
+        }
     }
 }

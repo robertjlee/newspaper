@@ -525,6 +525,6 @@ class NewspaperLayoutImplTest {
         HeadSpanArticle art1 = new HeadSpanArticle(headers, settings, lengthCalculator);
         newLayout.processInputs(singletonList(art1), logger, false);
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, newLayout::layOutNewspaper);
-        assertEquals("Input art1.tex would be longer than available page height. Increase page size, change to type article, or reduce size of insert.", ex.getMessage());
+        assertEquals("Input art1.tex would be 859.251969in longer than available page height (26.574803in). Increase page size, change to type article, or reduce size of insert.\n", ex.getMessage());
     }
 }

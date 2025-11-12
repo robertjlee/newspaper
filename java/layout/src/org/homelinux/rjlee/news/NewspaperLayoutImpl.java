@@ -210,8 +210,11 @@ public class NewspaperLayoutImpl implements NewspaperLayout {
                     is.remove(0);
                     allowPageEnlargementByCols -= colsAdded;
                 } else {
-                    if (fs.height() > settings.getColumnHeight()) {
-                        throw new IllegalArgumentException(String.format("Input " + fs.path().getFileName() + " would be longer than available page height. Increase page size, change to type article, or reduce size of insert."));
+                    double columnHeight = settings.getColumnHeight();
+                    if (fs.height() > columnHeight) {
+                        throw new IllegalArgumentException(
+                                String.format("Input %s would be %fin longer than available page height (%fin). Increase page size, change to type article, or reduce size of insert.",
+                                        fs.path().getFileName(), fs.height() - columnHeight, columnHeight));
                     }
                     logger.algorithm().printf("Failed to fit insert %s; deferring %d fixed articles to next page\n", fs, is.size());
                     Collections.reverse(is);

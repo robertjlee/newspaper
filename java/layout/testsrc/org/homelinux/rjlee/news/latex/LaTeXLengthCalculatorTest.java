@@ -71,7 +71,8 @@ class LaTeXLengthCalculatorTest {
         ShellProcessFactory shellProcessFactory = new MockShellProcessFactory(stdOut, stdErr, stdIn);
         LatexLength length = new LatexLength(1.23, fragments, Stream.of("\\usepackage{foo}"), settings, shellProcessFactory, Logger.getInstance());
         RuntimeException ex = assertThrows(RuntimeException.class, () -> calc.calculateLength(article, length), "No length was returned!");
-        assertEquals("Failed to calculate article length: Process completed without producing length: 0", ex.getMessage());
+        assertTrue(ex.getMessage().contains(path.toString()), ex.getMessage());
+        assertEquals("Failed to calculate article length: Process completed without producing length: 0", ex.getCause().getMessage());
     }
 
     @Test
