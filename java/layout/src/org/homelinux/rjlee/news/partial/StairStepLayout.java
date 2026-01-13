@@ -50,7 +50,7 @@ public class StairStepLayout extends AbstractFixedElementsLayout {
         algoLog.printf(" - layout of fixed size %d cols by %fin onto %d col page\n", width, length, numCols);
         algoLog.printf("   %fin %fin %fin\n", length, vSize, settings.getColumnHeight());
         if (length + vSize <= settings.getColumnHeight()) {
-            layoutBelow(i);
+            layoutBelow(i, allowPageEnlargementByCols);
             return 0;
         }
         return fitByFirstFit(i, length, width, allowPageEnlargementByCols);

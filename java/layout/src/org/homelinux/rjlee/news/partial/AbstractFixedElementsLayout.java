@@ -55,9 +55,10 @@ public abstract class AbstractFixedElementsLayout {
     /**
      * Lay out a fixed-size element at the bottom of the vertical; caller checks sizing.
      *
-     * @param i to lay out.
+     * @param i                          to lay out.
+     * @param allowPageEnlargementByCols
      */
-    protected void layoutBelow(FixedSize i) {
+    protected void layoutBelow(FixedSize i, long allowPageEnlargementByCols) {
         boolean wasEmpty = vSize == 0;
         Optional<Long> colHint = Optional.ofNullable(i.columnHint()).map(l -> l - 1);
         long col;
@@ -69,7 +70,20 @@ public abstract class AbstractFixedElementsLayout {
         } else {
             col = colHint.get() + i.cols();
         }
-        layoutSections.add(new LayoutSection(i, col - i.cols()));
+        // allow enlargement at this point if needed:
+        long startCol = col - i.cols();
+        if (startCol < 0 && numCols < (-startCol)) {
+            throw new IllegalStateException("Can't set a fixed-size insert " + i + " into " + (numCols + allowPageEnlargementByCols) + " columns");
+        }
+        if (startCol < 0) {
+            numCols -= startCol;
+            while (startCol < 0) {
+                startCol++;
+                p.addExtraColumn();
+            }
+            startCol = 0;
+        }
+        layoutSections.add(new LayoutSection(i, startCol));
         vSize += i.height() + (wasEmpty ? 0 : settings.getAlleyHeight());
     }
 

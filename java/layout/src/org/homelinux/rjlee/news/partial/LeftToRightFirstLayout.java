@@ -20,7 +20,7 @@ public class LeftToRightFirstLayout extends AbstractFixedElementsLayout {
 //        if (super.layoutSections.isEmpty()) {
         long rtn = fitByFirstFit(i, i.height(), i.cols(), allowPageEnlargementByCols);
         if (rtn < 0 && (i.height() < (settings.getColumnHeight() - vSize))) {
-            layoutBelow(i);
+            layoutBelow(i, allowPageEnlargementByCols);
             return 0;
         }
         return rtn;
