@@ -188,7 +188,7 @@ class LatexInteractionTest {
     void printAtPreamble() throws IOException {
         Settings settings = new Settings(new Properties(), MockPath.createMockPathWithName("name"));
         MockShellProcessFactory latexProcessFactory = new MockShellProcessFactory(new StringBuilder(), new StringBuilder(), new ByteArrayOutputStream());
-        LatexInteraction li = new LatexLength(1.23, emptyList(), Stream.empty(), settings, latexProcessFactory, new CapturingLogger());
+        LatexInteraction li = new LatexLength(1.23, emptyList(), Stream.empty(), settings, latexProcessFactory, new CapturingLogger(), "");
         StringWriter sw = new StringWriter();
 
         try (BufferedWriter writer = new BufferedWriter(sw);
@@ -207,7 +207,7 @@ class LatexInteractionTest {
         p.put("defaultFontFamilyFromHeaders", "true");
         Settings settings = new Settings(p, MockPath.createMockPathWithName("name"));
         MockShellProcessFactory latexProcessFactory = new MockShellProcessFactory(new StringBuilder(), new StringBuilder(), new ByteArrayOutputStream());
-        LatexInteraction li = new LatexLength(1.23, emptyList(), Stream.empty(), settings, latexProcessFactory, new CapturingLogger());
+        LatexInteraction li = new LatexLength(1.23, emptyList(), Stream.empty(), settings, latexProcessFactory, new CapturingLogger(), "");
         StringWriter sw = new StringWriter();
 
         try (BufferedWriter writer = new BufferedWriter(sw);
@@ -224,7 +224,7 @@ class LatexInteractionTest {
         p.put("defaultFontSize", "" + pixelSize);
         Settings settings = new Settings(p, MockPath.createMockPathWithName("name"));
         MockShellProcessFactory latexProcessFactory = new MockShellProcessFactory(new StringBuilder(), new StringBuilder(), new ByteArrayOutputStream());
-        LatexInteraction li = new LatexLength(1.23, emptyList(), Stream.empty(), settings, latexProcessFactory, new CapturingLogger());
+        LatexInteraction li = new LatexLength(1.23, emptyList(), Stream.empty(), settings, latexProcessFactory, new CapturingLogger(), "");
         StringWriter sw = new StringWriter();
 
         try (BufferedWriter writer = new BufferedWriter(sw);
@@ -242,7 +242,7 @@ class LatexInteractionTest {
         p.put("defaultFontSizeClo", "myfont");
         Settings settings = new Settings(p, MockPath.createMockPathWithName("name"));
         MockShellProcessFactory latexProcessFactory = new MockShellProcessFactory(new StringBuilder(), new StringBuilder(), new ByteArrayOutputStream());
-        LatexInteraction li = new LatexLength(1.23, emptyList(), Stream.empty(), settings, latexProcessFactory, new CapturingLogger());
+        LatexInteraction li = new LatexLength(1.23, emptyList(), Stream.empty(), settings, latexProcessFactory, new CapturingLogger(), "");
         StringWriter sw = new StringWriter();
 
         try (BufferedWriter writer = new BufferedWriter(sw);

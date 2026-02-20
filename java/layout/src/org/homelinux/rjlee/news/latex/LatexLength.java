@@ -21,6 +21,7 @@ import java.util.stream.Stream;
  */
 public class LatexLength extends LatexInteraction {
     private final Stream<String> preambleLines;
+    private final String context;
     private final FakePipedReader pr = new FakePipedReader();
     private final double width;
     private final List<Double> fragments;
@@ -29,9 +30,10 @@ public class LatexLength extends LatexInteraction {
     private Path tmpDir;
     private Path systemTmpDir = FileSystems.getDefault().getPath(System.getProperty("java.io.tmpdir"));
 
-    public LatexLength(double width, List<Double> fragments, Stream<String> preambleLines, Settings settings, ShellProcessFactory latexProcessFactory, Logger logger) {
+    public LatexLength(double width, List<Double> fragments, Stream<String> preambleLines, Settings settings, ShellProcessFactory latexProcessFactory, Logger logger, String context) {
         super(settings);
         this.preambleLines = preambleLines;
+        this.context = context;
         if (width <= 0) throw new IllegalArgumentException("Width must be positive");
         this.width = width;
         this.fragments = fragments;
@@ -76,7 +78,7 @@ public class LatexLength extends LatexInteraction {
         if (readLength.length() == 0 || readDepth.length() == 0) {
             logger.quiet().println(sb);
             logger.dumpAll().println("  Process completed without length: " + p.exitValue());
-            throw new RuntimeException("Failed to calculate article length: Process completed without producing length: " + p.exitValue());
+            throw new RuntimeException("Failed to calculate article length for " + this.context + ": Process completed without producing length: " + p.exitValue());
         }
         if (p.exitValue() != 0) {
             logger.quiet().println("  Process completed: " + p.exitValue());

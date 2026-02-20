@@ -51,7 +51,7 @@ public class ColumnarPage implements Page {
 
     private double calculateContinuationLength(String continuationText) {
         Logger logger = Logger.getInstance();
-        LatexLength ll = new LatexLength(settings.getColumnWidth(), emptyList(), Stream.empty(), settings, new LatexProcessFactory(), logger);
+        LatexLength ll = new LatexLength(settings.getColumnWidth(), emptyList(), Stream.empty(), settings, new LatexProcessFactory(), logger, "(continuation text)");
         try (PrintWriter pw = ll.writer()) {
             pw.println(continuationText);
         } catch (IOException ex) {

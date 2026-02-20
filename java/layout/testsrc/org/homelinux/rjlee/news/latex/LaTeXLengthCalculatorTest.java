@@ -69,10 +69,10 @@ class LaTeXLengthCalculatorTest {
         ByteArrayOutputStream stdIn = new ByteArrayOutputStream();
 
         ShellProcessFactory shellProcessFactory = new MockShellProcessFactory(stdOut, stdErr, stdIn);
-        LatexLength length = new LatexLength(1.23, fragments, Stream.of("\\usepackage{foo}"), settings, shellProcessFactory, Logger.getInstance());
+        LatexLength length = new LatexLength(1.23, fragments, Stream.of("\\usepackage{foo}"), settings, shellProcessFactory, Logger.getInstance(), "");
         RuntimeException ex = assertThrows(RuntimeException.class, () -> calc.calculateLength(article, length), "No length was returned!");
         assertTrue(ex.getMessage().contains(path.toString()), ex.getMessage());
-        assertEquals("Failed to calculate article length: Process completed without producing length: 0", ex.getCause().getMessage());
+        assertEquals("Failed to calculate article length for : Process completed without producing length: 0", ex.getCause().getMessage());
     }
 
     @Test
@@ -89,7 +89,7 @@ class LaTeXLengthCalculatorTest {
         ByteArrayOutputStream stdIn = new ByteArrayOutputStream();
 
         ShellProcessFactory shellProcessFactory = new MockShellProcessFactory(stdOut, stdErr, stdIn);
-        LatexLength length = new LatexLength(1.23, fragments, Stream.of("\\usepackage{foo}"), settings, shellProcessFactory, Logger.getInstance()) {
+        LatexLength length = new LatexLength(1.23, fragments, Stream.of("\\usepackage{foo}"), settings, shellProcessFactory, Logger.getInstance(), "") {
             @Override
             public PrintWriter writer() throws IOException {
                 throw new IOException("Error!");
@@ -112,7 +112,7 @@ class LaTeXLengthCalculatorTest {
         ByteArrayOutputStream stdIn = new ByteArrayOutputStream();
 
         ShellProcessFactory shellProcessFactory = new MockShellProcessFactory(stdOut, stdErr, stdIn);
-        LatexLength length = new LatexLength(1.23, fragments, Stream.of("\\usepackage{foo}"), settings, shellProcessFactory, Logger.getInstance());
+        LatexLength length = new LatexLength(1.23, fragments, Stream.of("\\usepackage{foo}"), settings, shellProcessFactory, Logger.getInstance(), "");
         double result = calc.calculateLength(article, length);
 
         assertAll(
@@ -140,7 +140,7 @@ class LaTeXLengthCalculatorTest {
         ByteArrayOutputStream stdIn = new ByteArrayOutputStream();
 
         ShellProcessFactory shellProcessFactory = new MockShellProcessFactory(stdOut, stdErr, stdIn);
-        LatexLength length = new LatexLength(1.23, fragments, Stream.of("\\usepackage{foo}"), settings, shellProcessFactory, Logger.getInstance()) {
+        LatexLength length = new LatexLength(1.23, fragments, Stream.of("\\usepackage{foo}"), settings, shellProcessFactory, Logger.getInstance(), "") {
             @Override
             public Path outPath() {
                 return MockPath.createMockPathWithName("tmpdir", true);

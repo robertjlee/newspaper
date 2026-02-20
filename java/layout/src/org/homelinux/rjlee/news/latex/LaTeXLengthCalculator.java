@@ -23,7 +23,7 @@ public class LaTeXLengthCalculator implements LengthCalculator {
 
     @Override
     public double calculateLength(double widthForSizing, List<Double> fragments, Stream<String> preambleLines, Settings settings, ArticleText articleText) {
-        LatexLength ll = new LatexLength(widthForSizing, fragments, preambleLines, settings, new LatexProcessFactory(), Logger.getInstance());
+        LatexLength ll = new LatexLength(widthForSizing, fragments, preambleLines, settings, new LatexProcessFactory(), Logger.getInstance(), articleText.path().getFileName().toString());
         return calculateLength(articleText, ll);
     }
 

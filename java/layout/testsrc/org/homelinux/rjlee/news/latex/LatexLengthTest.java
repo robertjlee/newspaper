@@ -235,7 +235,7 @@ class LatexLengthTest {
         fragments = Arrays.asList(3., 4.1);
         logger = new CapturingLogger();
         List<String> preambleLines = Arrays.asList("\\typeout{preamble}", "\\usepackage{indentfirst}");
-        latexLength = new LatexLength(WIDTH, fragments, preambleLines.stream(), settings, latexProcessFactory, logger);
+        latexLength = new LatexLength(WIDTH, fragments, preambleLines.stream(), settings, latexProcessFactory, logger, "");
     }
 
     @Test
@@ -411,14 +411,14 @@ class LatexLengthTest {
         latexProcessFactory = new MockShellProcessFactory(new StringBuilder(), new StringBuilder(), sentToLaTeX)
                 .withErrorOnStdOut();
         List<String> preambleLines = Arrays.asList("\\typeout{preamble}", "\\usepackage{indentfirst}");
-        latexLength = new LatexLength(WIDTH, fragments, preambleLines.stream(), settings, latexProcessFactory, logger);
+        latexLength = new LatexLength(WIDTH, fragments, preambleLines.stream(), settings, latexProcessFactory, logger, "");
         try (PrintWriter pw = latexLength.writer()) {
             pw.println("My document here!");
         }
         RuntimeException ex = assertThrows(RuntimeException.class, latexLength::calculate);
 
         assertAll(
-                () -> assertEquals("Failed to calculate article length: Process completed without producing length: 0", ex.getMessage()),
+                () -> assertEquals("Failed to calculate article length for : Process completed without producing length: 0", ex.getMessage()),
                 () -> assertEquals("", sentToLaTeX.toString()), // TODO: can we write to the process rather than a temp file?
                 () -> assertEquals(EXPECTED_LATEX + "\n  Process completed without length: 0",
                         // skip the first line; the tmpdir can change:
@@ -468,7 +468,7 @@ class LatexLengthTest {
         fragments = Arrays.asList(3., 4.1);
         logger = new CapturingLogger();
         List<String> preambleLines = Arrays.asList("\\typeout{preamble}", "\\usepackage{indentfirst}");
-        latexLength = new LatexLength(WIDTH, fragments, preambleLines.stream(), settings, latexProcessFactory, logger);
+        latexLength = new LatexLength(WIDTH, fragments, preambleLines.stream(), settings, latexProcessFactory, logger, "");
 
         try (PrintWriter pw = latexLength.writer()) {
             pw.println("My document here!");
@@ -511,7 +511,7 @@ class LatexLengthTest {
         fragments = Arrays.asList(3., 4.1);
         logger = new CapturingLogger();
         List<String> preambleLines = Arrays.asList("\\typeout{preamble}", "\\usepackage{indentfirst}");
-        latexLength = new LatexLength(WIDTH, fragments, preambleLines.stream(), settings, latexProcessFactory, logger);
+        latexLength = new LatexLength(WIDTH, fragments, preambleLines.stream(), settings, latexProcessFactory, logger, "");
 
         try (PrintWriter pw = latexLength.writer()) {
             pw.println("My document here!");
